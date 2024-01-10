@@ -11,6 +11,10 @@ struct RatingScores {
     int hostRating;
 
     RatingScores(int skillRating = 0, int supporterRating = 0, int hostRating = 0) : skillRating(skillRating), supporterRating(supporterRating), hostRating(hostRating) {}
+
+    int getSkillRating() const { return skillRating; }
+    int getSupporterRating() const { return supporterRating; }
+    int getHostRating() const { return hostRating; }
 };
 
 class Rating {

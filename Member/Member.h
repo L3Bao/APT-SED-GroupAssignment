@@ -36,8 +36,11 @@ public:
     Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName,
            std::string phoneNumber, std::string email, std::string address, int creditPoints = 20);
 
+    void rateAsHost(Member* supporter, int skillRating, int supporterRating);
 
-    double getRatingScore();
+    void rateAsSupporter(Member* host, int hostRating);
+
+    std::tuple<double, double, double> getRatingScore();
 
     bool showMemInfo();
 
@@ -61,9 +64,9 @@ public:
 
 //    std::string toStr();
 
-    // // bool setNewMotorbike(Motorbike *motorbike); 
+    bool setNewSkill(Skill *skill); 
 
-    // std::string get_name();
+    std::string get_name();
 
     // bool addToRequestList(Request *addedRequest);
 
