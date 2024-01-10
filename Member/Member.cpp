@@ -10,6 +10,7 @@
 #include "MemberRent\MemberRent.h"
 #include "Skill\Skill.h"
 #include "Middleware\Middleware.h"
+#include "Request\Request.h"
 
 //Constructor
 Member::Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName, std::string phoneNumber, std::string email, std::string address, int creditPoints) : User(std::move(username), std::move(password)) {
@@ -28,30 +29,6 @@ Member::Member(int memberID, std::string username, std::string password, std::st
 
 std::string Member::get_name() {
     return firstName + " " + lastName;
-}
-
-
-// Show member's information
-bool Member::showMemInfo() {
-    std::cout << "\n+ Username: " << username << '\n';
-    std::cout << "+ Full name: " << get_name() << '\n';
-    std::cout << "+ Phone number: " << phoneNumber << '\n';
-    std::cout << "+ Email: " << email << '\n';
-    std::cout << "+ Address: " << address << '\n';
-    std::cout << "+ Credit points: " << creditPoints << '\n';
-
-    if (ownedSkill != nullptr) {
-        std::cout << "+ Owned skill: " << ownedSkill->getSkillList() << '\n';
-    }
-
-    // Get the rating scores
-    auto [avgSkillRating, avgSupporterRating, avgHostRating] = getRatingScore();
-    std::cout << "+ Average Skill Rating: " << avgSkillRating << '\n';
-    std::cout << "+ Average Supporter Rating: " << avgSupporterRating << '\n';
-    std::cout << "+ Average Host Rating: " << avgHostRating << '\n';
-    
-    std::cout << '\n';
-    return true;
 }
 
 std::tuple<double, double, double> Member::getRatingScore() {
@@ -77,6 +54,30 @@ std::tuple<double, double, double> Member::getRatingScore() {
     ss >> avgSkillRating >> avgSupporterRating >> avgHostRating;
 
     return std::make_tuple(avgSkillRating, avgSupporterRating, avgHostRating);
+}
+
+
+// Show member's information
+bool Member::showMemInfo() {
+    std::cout << "\n+ Username: " << username << '\n';
+    std::cout << "+ Full name: " << get_name() << '\n';
+    std::cout << "+ Phone number: " << phoneNumber << '\n';
+    std::cout << "+ Email: " << email << '\n';
+    std::cout << "+ Address: " << address << '\n';
+    std::cout << "+ Credit points: " << creditPoints << '\n';
+
+    if (ownedSkill != nullptr) {
+        std::cout << "+ Owned skill: " << ownedSkill->getSkillList() << '\n';
+    }
+
+    // Get the rating scores
+    auto [avgSkillRating, avgSupporterRating, avgHostRating] = getRatingScore();
+    std::cout << "+ Average Skill Rating: " << avgSkillRating << '\n';
+    std::cout << "+ Average Supporter Rating: " << avgSupporterRating << '\n';
+    std::cout << "+ Average Host Rating: " << avgHostRating << '\n';
+
+    std::cout << '\n';
+    return true;
 }
 
 // List the skill
@@ -128,5 +129,9 @@ bool Member::showListOfRequest() {
     }
 
     std::cout << "The request list for your support:\n\n";
+    for (int i = 0; i < ownedSkill->skillRequestList.size(); i++) {
+        auto request = ownedSkill->skillRequestList[i];
+        std::cout << "+ " << i+1 << ". " << request->requestFrom->toString() << '\n';
+    }
 
 }
