@@ -57,7 +57,7 @@ public:
 
     bool completeRequest(int completedSkillID); 
 
-    // bool RatingMotorbike (Motorbike *rentMotorbike, int scoreRating, std::string comment); <?????>
+    // bool ReviewSkill (Motorbike *rentMotorbike, int scoreRating, std::string comment); <?????>
 
     // bool showUnrateMemList(); <?????>
 

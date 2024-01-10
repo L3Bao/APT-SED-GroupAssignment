@@ -1,6 +1,6 @@
-#ifndef SKILL_H
-#define SKILL_H
 
+#ifndef Skill_H
+#define Skill_H
 #include <iostream>
 #include <vector>
 
@@ -15,6 +15,7 @@ class Skill {
     std::vector<std::string> skillList;
     Member* skillOwner;
     bool isListed;
+    int cityID;
     DateTime* availableFrom;
     DateTime* availableTo;
     int creditCostPerHour;
@@ -49,5 +50,7 @@ public:
 
     friend class System;
 };
-
 #endif //SKILL_H
+
+
+
