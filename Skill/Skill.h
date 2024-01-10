@@ -1,3 +1,6 @@
+#ifndef SKILL_H
+#define SKILL_H
+
 #include <iostream>
 #include <vector>
 
@@ -46,3 +49,5 @@ public:
 
     friend class System;
 };
+
+#endif //SKILL_H
