@@ -31,8 +31,9 @@ class Member: public User {
 
     std::vector<MemberRent*> memberRentList;
 
+    std::vector<Member*> blockedMemberList;
+
 public:
-    void test();
     Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName,
            std::string phoneNumber, std::string email, std::string address, int creditPoints = 20);
 
@@ -52,9 +53,9 @@ public:
 
     bool denyRequest(int acceptedRequestID);
 
-    bool acceptTheRequest(int acceptedRequestID);
+    bool acceptRequest(int acceptedRequestID);
 
-    // bool completRequest(int turnbackRentMotorbikeID); <?????>
+    bool completeRequest(int completedSkillID); 
 
     // bool RatingMotorbike (Motorbike *rentMotorbike, int scoreRating, std::string comment); <?????>
 
@@ -70,19 +71,19 @@ public:
 
     // bool addToRequestList(Request *addedRequest);
 
-    // bool RemoveFromRequestList(Request *removedRequest);
+    bool RemoveFromRequestList(Request *removedRequest);
 
-    // bool addRenter(MemberRent *addedRent);
+    bool addHost(MemberRent *addedRent);
 
-    // bool removeRenter(MemberRent *turnbackRent);
+    // bool removeHost(MemberRent *completeRequest);
 
     // bool showRenter();
 
     // bool addRatingToMember(Rating *memberRating);
 
-    // bool minusCreditPoints(int points);
+    bool minusCreditPoints(int points);
 
-    // bool addCreditPoints(int points);
+    bool addCreditPoints(int points);
 
     /*
      * View Member Rating by admin

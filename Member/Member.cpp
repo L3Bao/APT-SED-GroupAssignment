@@ -131,7 +131,133 @@ bool Member::showListOfRequest() {
     std::cout << "The request list for your support:\n\n";
     for (int i = 0; i < ownedSkill->skillRequestList.size(); i++) {
         auto request = ownedSkill->skillRequestList[i];
-        std::cout << "+ " << i+1 << ". " << request->requestFrom->toString() << '\n';
+
+        // Store the result of getRatingScore in a tuple
+        auto ratingScores = request->requestedByMember->getRatingScore();
+
+        // Extract the Host Rating Score using std::get
+        double hostRatingScore = std::get<2>(ratingScores);
+
+        std::cout << "+ " << i+1 << ". " << request->requestFrom->toString() << " - " << request->requestFrom->toString() << ", " << "Member: " << request->requestedByMember->get_name() << ", Host Rating: " << hostRatingScore << '\n';
     }
 
+}
+
+bool Member::denyRequest(int acceptedRequestID) {
+    // Check if the acceptedRequestID is valid
+    if (acceptedRequestID < 0 || acceptedRequestID >= ownedSkill->skillRequestList.size()) {
+        std::cerr << "Invalid request ID\n";
+        return false;
+    }
+
+
+    auto acceptedRequest = ownedSkill->skillRequestList[acceptedRequestID];
+
+    // Create a vector to store the requests to remove
+    std::vector<Request*> requestsToRemove;
+
+    for (auto &request : ownedSkill->skillRequestList) {
+        // Check if the request is the accepted request
+
+        if (request == acceptedRequest) {
+            continue;
+        }
+
+        // Check time overlap
+        if (!(*request->requestTo < *acceptedRequest->requestFrom || *acceptedRequest->requestTo < *request->requestFrom)) {
+            // Add to removal list if there's an overlap
+            requestsToRemove.push_back(request);
+        }
+    }
+
+    // Remove overlapping requests
+    for (auto &request : requestsToRemove) {
+        // Remove the request from the member's request list
+        request->requestedByMember->RemoveFromRequestList(request);
+        // Remove the request from the skill's request list
+        ownedSkill->skillRequestList.erase(std::remove(ownedSkill->skillRequestList.begin(), ownedSkill->skillRequestList.end(), request), ownedSkill->skillRequestList.end());
+    }
+}
+
+//Remove the request from member request list.
+bool Member::RemoveFromRequestList(Request *removedRequest) {
+    memberRequestList.erase(std::find(memberRequestList.begin(), memberRequestList.end(), removedRequest));
+    return true;
+}
+
+bool Member::acceptRequest(int acceptedRequestID) {
+    // Check if the acceptedRequestID is valid
+    if (acceptedRequestID < 0 || acceptedRequestID >= ownedSkill->skillRequestList.size()) {
+        std::cerr << "Invalid request ID\n";
+        return false;
+    }
+
+    auto acceptedRequest = ownedSkill->skillRequestList[acceptedRequestID];
+
+    // Parameter for SkillRent
+    auto rentStartTime = acceptedRequest->requestFrom;
+    auto rentEndTime = acceptedRequest->requestTo;
+    auto rentMember = acceptedRequest->requestedByMember;
+
+    int durationInHours = (*rentEndTime - *rentStartTime) / 60; // Convert to hour
+
+    // Calculate the required credit points
+    int requiredCreditPoints = durationInHours * ownedSkill->creditCostPerHour;
+    if (rentMember->creditPoints < requiredCreditPoints) {
+        // Remove the request from the member's request list
+        rentMember->RemoveFromRequestList(acceptedRequest);
+
+        // Remove the accepted request from the skill's request list
+        ownedSkill->skillRequestList.erase(std::remove(ownedSkill->skillRequestList.begin(), ownedSkill->skillRequestList.end(), acceptedRequest), ownedSkill->skillRequestList.end());
+
+        return false;
+    }
+
+    // Create the according objects
+    auto *skillRent = new SkillRent(rentStartTime, rentEndTime, rentMember);
+    auto *memberRent = new MemberRent(rentStartTime, rentEndTime, ownedSkill);
+
+    // Add to skillRentList
+    ownedSkill->skillRentList.push_back(skillRent);
+
+    // Add host to the list
+    rentMember->addHost(memberRent);
+
+    // Reject other requests if time is overlapped
+    denyRequest(acceptedRequestID);
+
+    // Remove the request from request list
+    rentMember->RemoveFromRequestList(acceptedRequest);
+
+    // Remove the accepted request from the skill's request list
+    ownedSkill->skillRequestList.erase(std::remove(ownedSkill->skillRequestList.begin(), ownedSkill->skillRequestList.end(), acceptedRequest), ownedSkill->skillRequestList.end());
+
+    // Deduct the host's credit points and add to the supporter's credit points
+    rentMember->minusCreditPoints(requiredCreditPoints);
+    this->addCreditPoints(requiredCreditPoints);
+
+    return true;
+}
+
+bool Member::addHost(MemberRent *addedRent) {
+    memberRentList.push_back(addedRent);
+    return true;
+}
+
+bool Member::addCreditPoints(int points) {
+    creditPoints += points;
+    return true;
+}
+
+bool Member::minusCreditPoints(int points) {
+    if (creditPoints < points) {
+        return false;
+    }
+
+    creditPoints -= points;
+    return true;
+}
+
+bool Member::completeRequest(int completedSkillID) {
+    
 }
