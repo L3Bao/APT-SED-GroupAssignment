@@ -1,5 +1,3 @@
-
-
 #include <sstream>
 #include <vector>
 #include "Middleware.h"
@@ -22,23 +20,22 @@ double convertStringToDouble(std::string &str) {
     return result;
 }
 
-DateTime* convertStringToDate(std::string &str) {
+DateTime* convertStringToDateTime(const std::string &str) {
     std::stringstream ss {str};
-    std::string word;
-    std::vector<std::string> wordList;
+    std::string segment;
+    std::vector<int> timeSegments;
 
-    // Split the parameter by '/'
-    while (std::getline(ss, word, '/')) {
-        wordList.push_back(word);
+    // Split string by ':'
+    while (std::getline(ss, segment, ':')) {
+        timeSegments.push_back(std::stoi(segment));
     }
 
-    // Get the date parameter
-    int day = convertStringToInt(wordList[0]);
-    int month = convertStringToInt(wordList[1]);
-    int year = convertStringToInt(wordList[2]);
+    if (timeSegments.size() != 2) {
+        throw std::invalid_argument("Invalid time format. Time should be in hh:mm format.");
+    }
 
-    // Create a day object
-    auto *result = new Date(day, month, year);
+    // Create a DateTime object
+    DateTime* result = new DateTime(timeSegments[0], timeSegments[1]);
 
     return result;
 }

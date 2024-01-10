@@ -7,7 +7,7 @@
 
 int convertStringToInt(std::string &str);
 double convertStringToDouble(std::string &str);
-DateTime* convertStringToDate(std::string &str);
+DateTime* convertStringToDateTime(std::string &str);
 bool isNumber(std::string &str);
 DateTime* getCurrentDate();
 bool isDouble(std::string &str);
