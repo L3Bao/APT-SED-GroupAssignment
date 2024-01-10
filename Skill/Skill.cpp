@@ -1,5 +1,5 @@
 #include "Skill.h"
-// #include "Rating.h"
+#include "Rating.h"
 #include "DateTime.h"
 #include "Member.h"
 
