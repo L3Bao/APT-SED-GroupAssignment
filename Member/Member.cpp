@@ -3,6 +3,7 @@
 #include <sstream>
 #include <cmath>
 #include <iomanip>
+#include <optional>
 
 #include "Member.h"
 #include "Rating\Rating.h"
@@ -81,7 +82,7 @@ bool Member::showMemInfo() {
 }
 
 // List the skill
-bool Member::listSkill(DateTime *startTime, DateTime *endTime, int creditPointsPerHour, double minimumHostRating) {
+bool Member::listSkill(DateTime *startTime, DateTime *endTime, int creditPointsPerHour, std::optional<double> minimumHostRating) {
     if (ownedSkill->isListed) {
         return false;
     }
@@ -259,5 +260,50 @@ bool Member::minusCreditPoints(int points) {
 }
 
 bool Member::completeRequest(int completedSkillID) {
+    // Check completedSkillID is valid
+    if (completedSkillID < 0 || completedSkillID >= memberRentList.size()) {
+        std::cerr << "Invalid skill ID\n";
+        return false;
+    }
+
+    auto completedSkill = memberRentList[completedSkillID];
+    auto completedSkillFrom = completedSkill->rentFrom;
+    auto completedSkillTo = completedSkill->rentTo;
+    auto completedRentSkill = completedSkill->rentSkill;
+
+    removeHost(completedSkill);
+
+    return true;
+}
+
+bool Member::removeHost(MemberRent *completedRequest) {
+    memberRentList.erase(std::find(memberRentList.begin(), memberRentList.end(), completedRequest));
+    return true;
+}
+
+bool Member::rateSkill(Skill *ratedSkill, int skillRating, int supporterRating, std::string comment) {
+    // Check if the ratedSkill is valid
+    if (ratedSkill == nullptr || ratedSkill->skillOwner == nullptr) {
+        return false;
+    }
+
+    if (skillRating < 1 || skillRating > 5 || supporterRating < 1 || supporterRating > 5) {
+        return false; //Invalid rating score
+    }
+
+    RatingScores scores(skillRating, supporterRating);
+
+    auto newRating = new Rating(scores, std::move(comment), this);
+    ratedSkill->addReviewToSkill(newRating);
+
+    return true;
+}
+
+bool Member::addToRequestList(Request *addedRequest) {
+    memberRequestList.push_back(addedRequest);
+    return true;
+}
+
+bool Member::showSkill() {
     
 }

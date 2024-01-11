@@ -3,6 +3,7 @@
 #define Skill_H
 #include <iostream>
 #include <vector>
+#include <optional>
 
 class DateTime;
 class Rating;
@@ -19,7 +20,7 @@ class Skill {
     DateTime* availableFrom;
     DateTime* availableTo;
     int creditCostPerHour;
-    double minHostRating;
+    std::optional<double> minHostRating;
 
     std::vector<Rating*> skillRatingList;
 

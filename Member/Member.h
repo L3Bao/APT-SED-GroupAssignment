@@ -6,6 +6,7 @@
 // #include "../../Validation/Validation.h"
 #include <iostream>
 #include <vector>
+#include <optional>
 
 class Skill;
 class Rating;
@@ -45,7 +46,7 @@ public:
 
     bool showMemInfo();
 
-    bool listSkill(DateTime *startTime, DateTime *endTime, int creditPointsPerHour, double minimumHostRating);
+    bool listSkill(DateTime *startTime, DateTime *endTime, int creditPointsPerHour, std::optional<double> minimumHostRating);
 
     bool unlistSkill();
 
@@ -57,7 +58,7 @@ public:
 
     bool completeRequest(int completedSkillID); 
 
-    // bool ReviewSkill (Motorbike *rentMotorbike, int scoreRating, std::string comment); <?????>
+    bool rateSkill (Skill *supportedSkill, int skillRating, int supporterRating, std::string comment);
 
     // bool showUnrateMemList(); <?????>
 
@@ -69,15 +70,17 @@ public:
 
     std::string get_name();
 
-    // bool addToRequestList(Request *addedRequest);
+    bool addToRequestList(Request *addedRequest);
 
     bool RemoveFromRequestList(Request *removedRequest);
 
     bool addHost(MemberRent *addedRent);
 
-    // bool removeHost(MemberRent *completeRequest);
+    bool removeHost(MemberRent *completedRequest);
 
-    // bool showRenter();
+    bool rateHost();
+
+    bool showSkill();
 
     // bool addRatingToMember(Rating *memberRating);
 
@@ -91,9 +94,7 @@ public:
 
     // std::string viewMemberRating();
 
-    /*
-    Get current rented motorbike
-    */
+    std::string guestViewSupporterInfo();
 
     ~Member();
 
