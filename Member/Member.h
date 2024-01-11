@@ -19,8 +19,7 @@ struct MemberBlock {
     bool blockView;
     bool blockRequestSupport;
 
-    MemberBlock(Member* member, bool view, bool request)
-        : blockedMember(member), blockView(view), blockRequestSupport(request) {}
+    MemberBlock(Member* member, bool view, bool request) : blockedMember(member), blockView(view), blockRequestSupport(request) {}
 };
 
 class Member: public User {
@@ -44,8 +43,7 @@ class Member: public User {
     std::vector<MemberBlock> blockedMemberList;
 
 public:
-    Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName,
-           std::string phoneNumber, std::string email, std::string address, int creditPoints = 20);
+    Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName, std::string phoneNumber, std::string email, std::string address, int creditPoints = 20);
 
     std::tuple<double, double, double> getRatingScore();
 

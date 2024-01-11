@@ -43,10 +43,6 @@ public:
 
     bool addReviewToSkill(Rating *skillReview);
 
-    std::string viewSkillInfo();
-
-    std::string viewSkillReview();
-
     ~Skill();
 
     friend class Member;

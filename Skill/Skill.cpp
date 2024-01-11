@@ -51,3 +51,18 @@ bool Skill::addReviewToSkill(Rating *skillReview) {
     skillRatingList.push_back(skillReview);
     return true;
 }
+
+Skill::~Skill() {
+    for (auto request : skillRequestList) {
+        delete request;
+    }
+    for (auto rating : skillRatingList) {
+        delete rating;
+    }
+    for (auto rent : skillRentList) {
+        delete rent;
+    }
+
+    delete availableFrom;
+    delete availableTo;
+}

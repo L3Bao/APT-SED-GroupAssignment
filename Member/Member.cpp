@@ -426,4 +426,7 @@ Member::~Member() {
     for (auto &request : memberRequestList) {
         delete request;
     }
+    for (auto &block : blockedMemberList) {
+        delete block.blockedMember;
+    }
 }
