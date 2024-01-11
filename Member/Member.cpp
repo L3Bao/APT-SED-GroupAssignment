@@ -369,6 +369,51 @@ bool Member::guestViewSupporterInfo() {
 
 }
 
+bool Member::blockMember(Member* memberToBlock, bool blockView, bool blockRequestSupport) {
+    // Check if memberToBlock is valid and not the same as the current member
+    if (memberToBlock == nullptr || memberToBlock == this) {
+        return false;
+    }
+
+    // Check if the member is already blocked
+    if (isMemberBlocked(memberToBlock)) {
+        return false;
+    }
+
+    // Add to blocked list with specified block types
+    blockedMemberList.emplace_back(memberToBlock, blockView, blockRequestSupport);
+
+    return true;
+}
+
+bool Member::isMemberBlocked(Member* member) {
+    // Check if the member is in the blocked list
+    for (const auto& block : blockedMemberList) {
+        if (block.blockedMember == member) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Member::isBlockedForViewing(Member* member) {
+    for (const auto& block : blockedMemberList) {
+        if (block.blockedMember == member && block.blockView) {
+            return true; // The member is blocked from viewing
+        }
+    }
+    return false; // No block found for viewing
+}
+
+bool Member::isBlockedForRequesting(Member* member) {
+    for (const auto& block : blockedMemberList) {
+        if (block.blockedMember == member && block.blockRequestSupport) {
+            return true; // The member is blocked from requesting support
+        }
+    }
+    return false; // No block found for requesting support
+}
+
 // Destructor
 Member::~Member() {
     delete ownedSkill;

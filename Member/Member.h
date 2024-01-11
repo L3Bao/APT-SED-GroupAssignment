@@ -14,6 +14,15 @@ class Request;
 class MemberRent;
 class DateTime;
 
+struct MemberBlock {
+    Member* blockedMember;
+    bool blockView;
+    bool blockRequestSupport;
+
+    MemberBlock(Member* member, bool view, bool request)
+        : blockedMember(member), blockView(view), blockRequestSupport(request) {}
+};
+
 class Member: public User {
     int memberID;
 
@@ -32,7 +41,7 @@ class Member: public User {
 
     std::vector<MemberRent*> memberRentList;
 
-    std::vector<Member*> blockedMemberList;
+    std::vector<MemberBlock> blockedMemberList;
 
 public:
     Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName,
@@ -81,6 +90,15 @@ public:
     std::string viewSupporterRateHost();
 
     bool guestViewSupporterInfo();
+
+    // Method for blocking another member
+    bool blockMember(Member* memberToBlock, bool blockView, bool blockRequestSupport);
+
+    // Method to check if a member is already blocked
+    bool isMemberBlocked(Member* member);
+
+    bool isBlockedForViewing(Member* member);
+    bool isBlockedForRequesting(Member* member);
 
     ~Member();
 

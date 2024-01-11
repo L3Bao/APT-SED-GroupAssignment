@@ -1,6 +1,6 @@
 
-#ifndef TEST_PATH_H
-#define TEST_PATH_H
+#ifndef PATH_H
+#define PATH_H
 
 #endif //TEST_PATH_H
 
