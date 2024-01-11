@@ -38,10 +38,6 @@ public:
     Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName,
            std::string phoneNumber, std::string email, std::string address, int creditPoints = 20);
 
-    void rateAsHost(Member* supporter, int skillRating, int supporterRating);
-
-    void rateAsSupporter(Member* host, int hostRating);
-
     std::tuple<double, double, double> getRatingScore();
 
     bool showMemInfo();
@@ -58,13 +54,7 @@ public:
 
     bool completeRequest(int completedSkillID); 
 
-    bool rateSkill (Skill *supportedSkill, int skillRating, int supporterRating, std::string comment);
-
-    // bool showUnrateMemList(); <?????>
-
-    // bool RatingRenter(int RatingedRenterID, int score, std::string comment); <?????>
-
-//    std::string toStr();
+    bool rateSkill(Skill *supportedSkill, int skillRating, int supporterRating, std::string comment);
 
     bool setNewSkill(Skill *skill); 
 
@@ -78,23 +68,19 @@ public:
 
     bool removeHost(MemberRent *completedRequest);
 
-    bool rateHost();
+    bool rateHost(Member* host, int hostRating, std::string comment);
 
-    bool showSkill();
+    bool showCurrentSkillRent();
 
-    // bool addRatingToMember(Rating *memberRating);
+    bool addRatingToMemberRentList(Rating *memberRating);
 
     bool minusCreditPoints(int points);
 
     bool addCreditPoints(int points);
 
-    /*
-     * View Member Rating by admin
-     */
+    std::string viewSupporterRateHost();
 
-    // std::string viewMemberRating();
-
-    std::string guestViewSupporterInfo();
+    bool guestViewSupporterInfo();
 
     ~Member();
 

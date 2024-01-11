@@ -31,7 +31,7 @@ class Skill {
 public:
     Skill(int skillID, std::vector<std::string> skillList);
 
-    std::string getSkillList();
+    std::string getSkillInfo();
 
     double getRatingScore();
 

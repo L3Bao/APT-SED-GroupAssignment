@@ -68,7 +68,7 @@ bool Member::showMemInfo() {
     std::cout << "+ Credit points: " << creditPoints << '\n';
 
     if (ownedSkill != nullptr) {
-        std::cout << "+ Owned skill: " << ownedSkill->getSkillList() << '\n';
+        std::cout << "+ Owned skill: " << ownedSkill->getSkillInfo() << '\n';
     }
 
     // Get the rating scores
@@ -291,7 +291,7 @@ bool Member::rateSkill(Skill *ratedSkill, int skillRating, int supporterRating, 
         return false; //Invalid rating score
     }
 
-    RatingScores scores(skillRating, supporterRating);
+    RatingScores scores(skillRating, supporterRating, 0);
 
     auto newRating = new Rating(scores, std::move(comment), this);
     ratedSkill->addReviewToSkill(newRating);
@@ -304,6 +304,81 @@ bool Member::addToRequestList(Request *addedRequest) {
     return true;
 }
 
-bool Member::showSkill() {
-    
+bool Member::showCurrentSkillRent() {
+    if (memberRentList.empty()) {
+        std::cout << "You do not have any supported skills right now\n\n";
+        return false;
+    }
+
+    std::cout << "Your current supported skills list:\n\n";
+    for (int i = 0; i < memberRentList.size(); i++) {
+        auto rent = memberRentList[i];
+        std::cout << "+ " << i+1 << ". " << rent->rentSkill->getSkillInfo() << ", " << rent->rentFrom->toString() << " - " << rent->rentTo->toString() << '\n';
+    }
+
+    return true;
+}
+
+bool Member::addRatingToMemberRentList(Rating *memberRating) {
+    memberRatingList.push_back(memberRating);
+    return true;
+}
+
+bool Member::rateHost(Member* host, int hostRating, std::string comment) {
+    if (host == nullptr) {
+        return false;
+    }
+
+    if (hostRating < 1 || hostRating > 5) {
+        return false; //Invalid rating score
+    }
+
+    RatingScores scores(0, 0, hostRating);
+
+    auto newRating = new Rating(scores, std::move(comment), this);
+}
+
+std::string Member::viewSupporterRateHost() {
+    std::stringstream ss;
+    if (memberRatingList.empty()) {
+        return "This host has no reviews.\n\n";
+    }
+
+    ss << "The reviews for this host:\n\n";
+    for (int i = 0; i < memberRatingList.size(); i++) {
+        auto rating = memberRatingList[i];
+        auto comment = rating->comment;
+        auto hostScore = rating->scores.getHostRating();
+        auto reviewedByMember = rating->reviewedByMember;
+        ss << "+ " << i+1 << ". " << reviewedByMember->get_name() << " - " << comment << ", " << "Host Rating: " << hostScore << '\n';
+    }
+    return ss.str();
+}
+
+bool Member::guestViewSupporterInfo() {
+    std::cout << "The supporter's information:\n";
+    std::cout << "+ Username: " << username << '\n';
+    std::cout << "+ Full name: " << get_name() << '\n';
+    std::cout << "+ Phone number: " << phoneNumber << '\n';
+    std::cout << "+ Email: " << email << '\n';
+    std::cout << "+ Address: " << address << '\n';
+    std::cout << "+ Credit points: " << creditPoints << '\n';
+    std::cout << "+ Skill: " << ownedSkill->getSkillInfo() << '\n';
+    std::cout << '\n';
+    return true;
+
+}
+
+// Destructor
+Member::~Member() {
+    delete ownedSkill;
+    for (auto &rent : memberRentList) {
+        delete rent;
+    }
+    for (auto &rating : memberRatingList) {
+        delete rating;
+    }
+    for (auto &request : memberRequestList) {
+        delete request;
+    }
 }
