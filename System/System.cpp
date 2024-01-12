@@ -35,15 +35,6 @@ void System::clearScreen(){
     
 }
 
-//Function to highlight
-void System::highlighter() {
-    int n;
-    cout << "\n";
-    for(n = 0; n < 9; n++){
-        cout << "-------------";
-    }
-}
-
 //Set current member when logging in
 void System::setCurrentMember(Member *member) {
     currentMember = member;
@@ -65,11 +56,11 @@ void System::addAdmin(Admin *admin) {
     systemAdminList.push_back(admin);
 }
 
-//Function to show suitable motorbike list
+//Function to show suitable supporter list
 bool System::memberSearchSuitableSkillList(DateTime *startDate, DateTime *endDate, int cityID) {
     memberSuitableSkillList.clear();
 
-    // If that member already send another request for this motorbike and that request is overlapped with the current request
+    // If that member already send another request for this supporter and that request is overlapped with the current request
     for (auto &request: currentMember->memberRequestList) {
 
         // If two time frame are not overlapped
@@ -81,56 +72,63 @@ bool System::memberSearchSuitableSkillList(DateTime *startDate, DateTime *endDat
         return false;
     }
 
-    // Find the suitable motorbike
-    for (auto &skill: systemSkillList) {
-
-        // If the motorbike is suitable
-        if ( isSuitableSkill(startDate, endDate, cityID - 1, skill)) {
-            memberSuitableSkillList.push_back(skill);
-        }
+    // Find the avalaible supporter
+    for (auto &skill : systemSkillList) {
+    if (isSuitableSkill(startDate, endDate, cityID - 1, skill)) {
+        suitableSkillsList.push_back(skill); // Add the skill
+        // If you also want to keep track of the members
+        memberSuitableSkillList.push_back(skill->skillOwner); // Add the skill owner
     }
+}
 
 
 
-    // If there is no suitable motorbike
+    // If there is no availalble supporters
     if (memberSuitableSkillList.empty()) {
         std::cout << "\nNo motorbike is suitable for you!\n";
         return false;
     }
 
-    // Print the suitable motorbike list for user
-    std::cout << "\nThe list of suitable motorbike for you:\n\n";
-    for (int i = 0; i < memberSuitableSkillList.size(); i++) {
+    // Print the suitable supporter list for user
+    std::cout << "\nThe list of suitable supporters for you:\n\n";
+    for (size_t i = 0; i < suitableSkillsList.size(); ++i) {
+        Skill* skill = suitableSkillsList[i];
+        Member* supporter = memberSuitableSkillList[i];
+        auto [avgSkillRating, avgSupporterRating, avgHostRating] = supporter->getRatingScore();
+
         std::cout << "--> " << i + 1 << ". ";
-        std::cout << "Address: " << memberSuitableSkillList[i]->getSkillList() << ", Rating: " << memberSuitableSkillList[i]->getRatingScore() << "\n";
+        std::cout << "Name: " << supporter->get_name() << ", ";
+        std::cout << "Skills: " << skill->getSkillInfo() << ", ";
+        std::cout << "Credit Per Hour: " << skill->creditCostPerHour << ", ";
+        std::cout << "Available: From " << skill->availableFrom->toString() << " to " << skill->availableTo->toString() << ", ";
+        std::cout << "Supporter's Rating: " << avgHostRating << "\n";
     }
-    cout << "\n\n";
+    std::cout << "\n\n";
 
     return true;
 }
 
-//Function to check if the motorbike is suitable to the member
+//Function to check if the supporter is suitable to the member
 bool System::isSuitableSkill(DateTime *startDate, DateTime *endDate, int cityID, Skill *skill) {
 
-    double currentMemberRatingScore = currentMember->getRatingScore();
+    auto [avgSkillRating, avgSupporterRating, avgHostRating] = skill->skillOwner->getRatingScore();
 
-    // If the motorbike is not listed
+    // If the skill is not listed
     if (!skill->isListed) {
         return false;
     }
 
-    // If the motorbike is owned by currentMember
+    // If the skill is owned by currentMember
     if (skill == currentMember->ownedSkill) {
         return false;
     }
 
     // If the member do not have minimum required score
-    if (currentMemberRatingScore < skill->minHostRating) {
+    if (avgHostRating < skill->minHostRating) {
         return false;
     }
 
     // If the motorbike is not available from the start and end date
-//    int num1 = *startDate - *(motorbike->availableFromDate), num2 = *motorbike->availableToDate - *endDate;
     if (*startDate - *(skill->availableFrom) < 0 || *skill->availableTo - *endDate < 0) {
         return false;
     }
@@ -141,7 +139,7 @@ bool System::isSuitableSkill(DateTime *startDate, DateTime *endDate, int cityID,
         return false;
     }
 
-    // If the motorbike is in different city
+    // If the supporter is in different city
     if (cityID != skill->cityID) {
         return false;
     }

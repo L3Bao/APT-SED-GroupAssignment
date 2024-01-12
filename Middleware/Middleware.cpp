@@ -54,16 +54,6 @@ bool isNumber(std::string &str) {
     return true;
 }
 
-// DateTime* getCurrentDate(){
-//     time_t t = std::time(nullptr);
-//     tm tm = *std::localtime(&t);
-
-//     std::stringstream ss;
-//     ss << std::put_time(&tm, "%d/%m/%Y");
-//     std::string str = ss.str();
-//     return convertStringToDate(str);
-// }
-
 bool isDouble(std::string &str){
     int dotCount = 0;
     for (int i = 0; i < str.length(); i++){

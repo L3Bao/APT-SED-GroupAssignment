@@ -23,7 +23,8 @@ public:
 
     std::vector<Skill*> systemSkillList;
     std::vector<Member*> systemMemberList;
-    std::vector<Skill*> memberSuitableSkillList;
+    std::vector<Member*> memberSuitableSkillList;
+    std::vector<Skill*> suitableSkillsList;
     std::vector<Admin*> systemAdminList;
     Member* currentMember;
     Validation validate;
