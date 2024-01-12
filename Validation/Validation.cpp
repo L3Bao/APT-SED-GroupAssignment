@@ -10,6 +10,7 @@
 #include "System\System.h"
 #include <ctype.h>
 #include <sstream>
+#include <regex>
 
 
 bool Validation::password(std::string password) {
@@ -74,5 +75,99 @@ bool Validation::name(std::string name){
     return true;
 }
 
+bool Validation::email(std::string emailAddress, System *sys) {
+    // Email format validation
+    std::regex emailPattern(R"(^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$)");
+    if (!std::regex_match(emailAddress, emailPattern)) {
+        std::cout << "Please enter a valid email address. Try again.\n";
+        return false;
+    }
 
+    // Check for email uniqueness
+    for (const auto& member : sys->systemMemberList) {
+        if (member->email == emailAddress) {
+            std::cout << "Email address is already in use. Please try another.\n";
+            return false;
+        }
+    }
 
+    return true; // Email is valid and unique
+}
+
+bool Validation::address(std::string homeAddress, System *sys) {
+    // Basic validation to check if the address is not empty
+    if (homeAddress.empty()) {
+        std::cout << "Address cannot be empty. Please enter a valid address.\n";
+        return false;
+    }
+
+    // Regex to match format "a number followed by a name"
+    std::regex addressPattern(R"(^\d+\s+[A-Za-z]+(?:\s+[A-Za-z]+)*)");
+    if (!std::regex_match(homeAddress, addressPattern)) {
+        std::cout << "Invalid address format. The format should be 'a number followed by a name'.\n";
+        return false;
+    }
+
+    // Check for address uniqueness
+    for (const auto& member : sys->systemMemberList) {
+        if (member->address == homeAddress) {
+            std::cout << "Address is already in use. Please try another.\n";
+            return false;
+        }
+    }
+
+    return true; // Address is valid
+}
+
+bool Validation::time(std::string time) {
+    // Check length (should be 5 for "hh:mm")
+    if (time.length() != 5) {
+        std::cout << "Please enter a valid time. Try again.\n";
+        return false;
+    }
+
+    // Check format (positions for digits and colon)
+    if (!std::isdigit(time[0]) || !std::isdigit(time[1]) || 
+        time[2] != ':' || 
+        !std::isdigit(time[3]) || !std::isdigit(time[4])) {
+        std::cout << "Please enter a valid time. Try again.\n";
+        return false;
+    }
+
+    // Convert string to DateTime and validate hours and minutes
+    try {
+        DateTime* temp = convertStringToDateTime(time);
+
+        // Validate hours and minutes
+        if (temp->hour < 0 || temp->hour > 23 || temp->minute < 0 || temp->minute > 59) {
+            std::cout << "Please enter a valid time. Try again.\n";
+            delete temp;
+            return false;
+        }
+
+        delete temp;
+    } catch (const std::invalid_argument& e) {
+        std::cout << e.what() << "\n";
+        return false;
+    }
+
+    return true;
+}
+
+bool Validation::timeLater(std::string startTime, std::string endTime) {
+    // Convert strings to DateTime objects
+    DateTime* start = convertStringToDateTime(startTime);
+    DateTime* end = convertStringToDateTime(endTime);
+
+    // Compare the two DateTime objects
+    if (*start < *end) {
+        delete start;
+        delete end;
+        return true;
+    } else {
+        delete start;
+        delete end;
+        std::cout << "End time must be later than start time. Try again.\n";
+        return false;
+    }
+}

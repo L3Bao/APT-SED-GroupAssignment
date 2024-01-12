@@ -35,13 +35,11 @@ public:
 
     std::string getCityName();
 
-    double getRatingScore();
-
     bool addRequestToSkillRequestList(Request* request);
 
     bool removeRequestFromSkillRequestList(Request *request);
 
-    bool addReviewToSkill(Rating *skillReview);
+    bool addRatingToSkill(Rating *skillRating);
 
     ~Skill();
 

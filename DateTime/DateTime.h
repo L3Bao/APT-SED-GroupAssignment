@@ -18,6 +18,8 @@ public:
     int operator-(DateTime &other);
     
     std::string toString();
+
+    friend class Validation;
 };
 
 

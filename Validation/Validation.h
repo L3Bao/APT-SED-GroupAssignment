@@ -4,11 +4,11 @@
 #include <iostream>
 #include <ctype.h>
 
-class Motorbike;
-class Review;
+class Skill;
+class Rating;
 class Request;
 class MemberRent;
-class Date;
+class DateTime;
 class System;
 
 class Validation {
@@ -19,13 +19,13 @@ public:
 
     bool phoneNumber(std::string phoneNumber, System *sys);
 
-    bool passport_number(std::string passportNumber, System *sys);
+    bool email(std::string email, System *sys);
 
-    bool driver_license_number(std::string driverLicenseNumber, System *sys);
+    bool address(std::string address, System *sys);
 
-    bool date(std::string date);
+    bool time(std::string time);
 
-    bool listDate (std::string startDate, std::string endDate);
+    bool timeLater(std::string startTime, std::string endTime);
 
     bool name(std::string name);
 

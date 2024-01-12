@@ -47,8 +47,8 @@ bool Skill::removeRequestFromSkillRequestList(Request *request) {
     return true;
 }
 
-bool Skill::addReviewToSkill(Rating *skillReview) {
-    skillRatingList.push_back(skillReview);
+bool Skill::addRatingToSkill(Rating *skillRating) {
+    skillRatingList.push_back(skillRating);
     return true;
 }
 

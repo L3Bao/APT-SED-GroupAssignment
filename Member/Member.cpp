@@ -294,7 +294,7 @@ bool Member::rateSkill(Skill *ratedSkill, int skillRating, int supporterRating, 
     RatingScores scores(skillRating, supporterRating, 0);
 
     auto newRating = new Rating(scores, std::move(comment), this);
-    ratedSkill->addReviewToSkill(newRating);
+    ratedSkill->addRatingToSkill(newRating);
 
     return true;
 }
