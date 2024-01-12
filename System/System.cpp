@@ -85,7 +85,7 @@ bool System::memberSearchSuitableSkillList(DateTime *startDate, DateTime *endDat
 
     // If there is no availalble supporters
     if (memberSuitableSkillList.empty()) {
-        std::cout << "\nNo motorbike is suitable for you!\n";
+        std::cout << "\nNo supporter is suitable for you!\n";
         return false;
     }
 
@@ -101,7 +101,8 @@ bool System::memberSearchSuitableSkillList(DateTime *startDate, DateTime *endDat
         std::cout << "Skills: " << skill->getSkillInfo() << ", ";
         std::cout << "Credit Per Hour: " << skill->creditCostPerHour << ", ";
         std::cout << "Available: From " << skill->availableFrom->toString() << " to " << skill->availableTo->toString() << ", ";
-        std::cout << "Supporter's Rating: " << avgHostRating << "\n";
+        std::cout << "Skill's Rating: " << avgSkillRating << ", ";
+        std::cout << "Supporter's Rating: " << avgSupporterRating << "\n";
     }
     std::cout << "\n\n";
 
