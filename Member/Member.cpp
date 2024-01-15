@@ -355,6 +355,23 @@ std::string Member::viewSupporterRateHost() {
     return ss.str();
 }
 
+std::string Member::viewHostRateSupporter() {
+    std::stringstream ss;
+    if (memberRatingList.empty()) {
+        return "This supporter has no reviews.\n\n";
+    }
+
+    ss << "The reviews for this supporter:\n\n";
+    for (int i = 0; i < memberRatingList.size(); i++) {
+        auto rating = memberRatingList[i];
+        auto comment = rating->comment;
+        auto skillScore = rating->scores.getSkillRating();
+        auto supporterScore = rating->scores.getSupporterRating();
+        auto reviewedByMember = rating->reviewedByMember;
+        ss << "+ " << i+1 << ". " << reviewedByMember-> get_name() << " - " << comment << ", " << "Skill Rating: " << skillScore << ", Supporter Rating: " << supporterScore << '\n';
+    }
+}
+
 bool Member::guestViewSupporterInfo() {
     std::cout << "The supporter's information:\n";
     std::cout << "Username: " << username << ', ';

@@ -87,6 +87,8 @@ public:
 
     std::string viewSupporterRateHost();
 
+    std::string viewHostRateSupporter();
+
     bool guestViewSupporterInfo();
 
     // Method for blocking another member

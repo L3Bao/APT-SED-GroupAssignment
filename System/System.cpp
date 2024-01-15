@@ -950,15 +950,15 @@ void System::suitableSkillMenu(int choice, DateTime *sD, DateTime *eD, int cityI
     std::cout << memberSuitableSkillList[choice - 1]->showMemInfo() << "\n";
     std::cout << "1. View reviews\n"
               << "2. Request supporter\n"
-              << "3. Back to motorbike list\n";
+              << "3. Back to skill list\n";
     switch (choiceFunc(1,3)){
         case 1:
-            std::cout << memberSuitableSkillList[choice - 1]->viewSkillReview();
-            std::cout << "1. Back to motorbike menu\n";
+            std::cout << memberSuitableSkillList[choice - 1]->viewHostRateSupporter();
+            std::cout << "1. Back to skill menu\n";
             choiceFunc(1, 1);
             suitableSkillMenu(choice, sD, eD, cityID);
         case 2:
-            if(memberSendRequest(sD, eD, memberSuitableSkillList[choice-1]->skillID)){
+            if(memberSendRequest(sD, eD, suitableSkillsList[choice-1]->skillID)){
                 std::cout << "Request sent\n";
             } else {
                 std::cout << "Failed to send request\n";
@@ -975,7 +975,7 @@ void System::suitableSkillMenu(int choice, DateTime *sD, DateTime *eD, int cityI
 
 
     //view motorbike request (feature 8, 9, 10, 11)
-void System:: memberSuitableSkillMenu() {
+void System::memberViewSkillRequestListMenu() {
     //Check if member has an owned motorbike
     if (currentMember->ownedSkill == nullptr){
         std::cout << "You haven't entered your motorbike info\n"
