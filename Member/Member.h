@@ -98,6 +98,8 @@ public:
     bool isBlockedForViewing(Member* member);
     bool isBlockedForRequesting(Member* member);
 
+    void setPassword(const std::string& newPassword);
+
     ~Member();
 
     friend class System;

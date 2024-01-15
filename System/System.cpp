@@ -15,6 +15,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <algorithm>
 using std::cout;
 
 //Clear system info when initialized
@@ -273,7 +274,68 @@ int System::choiceFunc(int a, int b) {
     return tempInt;
 }
 
+bool System::getUserYesNoResponse() {
+    std::string response;
+    while (true) {
+        std::getline(std::cin, response);
 
+        // Convert response to lowercase for easier comparison
+        std::transform(response.begin(), response.end(), response.begin(), 
+                       [](unsigned char c){ return std::tolower(c); });
+
+        if (response == "yes" || response == "y") {
+            return true;
+        } else if (response == "no" || response == "n") {
+            return false;
+        } else {
+            std::cout << "Invalid input. Please enter 'yes' or 'no': ";
+        }
+    }
+}
+
+// Feature 10: A member can block another member from viewing his/her information or requesting support.
+bool System::blockMemberInteraction(Member* requestingMember) {
+    if (requestingMember == nullptr) {
+        std::cerr << "Invalid requesting member.\n";
+        return false;
+    }
+
+    std::cout << "Select a member to block:\n";
+    Member* targetMember = chooseMember();
+
+    if (targetMember == nullptr) {
+        std::cout << "Returning to the previous menu...\n";
+        return false;
+    }
+
+    if (requestingMember == targetMember) {
+        std::cerr << "Cannot block oneself.\n";
+        return false;
+    }
+
+    bool blockView = false, blockRequestSupport = false;
+
+    // Check if already blocked from viewing and ask if not
+    if (!requestingMember->isBlockedForViewing(targetMember)) {
+        std::cout << "Do you want to block this member from viewing your information? (yes/no): ";
+        blockView = getUserYesNoResponse();
+    }
+
+    // Check if already blocked from requesting support and ask if not
+    if (!requestingMember->isBlockedForRequesting(targetMember)) {
+        std::cout << "Do you want to block this member from requesting your support? (yes/no): ";
+        blockRequestSupport = getUserYesNoResponse();
+    }
+
+    // Call the blockMember method of the requestingMember
+    bool success = requestingMember->blockMember(targetMember, blockView, blockRequestSupport);
+    if (success) {
+        std::cout << "Block settings updated successfully.\n";
+    } else {
+        std::cerr << "Failed to update block settings.\n";
+    }
+    return success;
+}
 
 //main menu
 void System::mainMenu() {
@@ -314,7 +376,7 @@ void System::mainMenu() {
 
 
 
-//guest (feature 2)
+// Guest's Feature
 void System::guestMenu() {
     clearScreen();
     std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
@@ -324,8 +386,8 @@ void System::guestMenu() {
               << "--> 3.\tBack to main menu\n";
     switch (choiceFunc(1, 3)){
         case 1:
-            //Print skill list
-            guestViewSkillList();
+            //Print supporter list
+            guestViewSupporterList();
             break;
         case 2:
             clearScreen();
@@ -343,30 +405,31 @@ void System::guestMenu() {
     }
 }
 
-void System::guestViewSkillList(){
+// Feature 2: A non-member can view all supporters’ details (but not their reviews)
+void System::guestViewSupporterList(){
     int choice;
     clearScreen();
     std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
-    std::cout << "\n\t\t--> SKILL LIST <-- \n"
+    std::cout << "\n\t\t--> SUPPORTER LIST <-- \n"
               << "ID    Information \n\n";
-    //Print skill list
-    for (Skill *mot : systemSkillList){
-        std::cout << std::setw(6) << std::left << std::to_string(mot->skillID) + ".";
-        std::cout << mot->getSkillInformation() << "\n";
+    //Print supporter list
+    for (Member* mem: systemMemberList){
+        std::cout << std::setw(6) << std::left << std::to_string(mem->memberID) + ".";
+        std::cout << mem->guestViewSupporterInfo() << "\n";
     }
-    std::cout << "\n" << systemSkillList.size()+1 << ". Back to guest menu";
-    choice = choiceFunc(1, systemSkillList.size()+1);
-    if (choice == systemSkillList.size()+1){
+    std::cout << "\n" << systemMemberList.size()+1 << ". Back to guest menu";
+    choice = choiceFunc(1, systemMemberList.size()+1);
+    if (choice == systemMemberList.size()+1){
         //Go back to guest menu
         guestMenu();
     } else {
-        //View motorbike info
-        cout << "\nYou have chosen motorbike number " << choice;
-        std::cout << "\n" << systemSkillList[choice - 1]->viewSkillInfoByGuest();
-        std::cout << "\n1. Back to skill list\n";
+        //View supporter info
+        cout << "\nYou have chosen supporter number " << choice;
+        std::cout << "\n" << systemMemberList[choice - 1]->guestViewSupporterInfo();
+        std::cout << "\n1. Back to supporter list\n";
         switch(choiceFunc(1, 1)){
             case 1:
-                guestViewSkillList();
+                guestViewSupporterList();
                 break;
         }
     }
@@ -412,7 +475,7 @@ void System::adminMenu() {
         case 1:
             //View member list
             clearScreen();
-            adminViewMemberList();
+            adminChangePassword();
             break;
 
         case 2:
@@ -423,7 +486,44 @@ void System::adminMenu() {
     }
 }
 
+void System::displayMemberList() {
+    std::cout << "List of members:\n";
+    for (size_t i = 0; i < systemMemberList.size(); ++i) {
+        std::cout << i + 1 << ". " << systemMemberList[i]->username << '\n';
+    }
+    std::cout << systemMemberList.size() + 1 << ". Back to main menu\n";
+}
 
+Member* System::chooseMember() {
+    displayMemberList();
+    int choice = choiceFunc(1, systemMemberList.size()+ 1);
+    if (choice == systemMemberList.size() + 1) {
+        return nullptr; // Indicates the admin chose to go back
+    }
+    return systemMemberList[choice - 1];
+}
+
+// Feature 3: An admin can login with predefined username and password, and can reset password for any member.
+bool System::adminChangePassword() {
+    Member* mem = chooseMember();
+    if (mem == nullptr) {
+        std::cout << "Returning to admin menu...\n";
+        adminMenu();
+        return false;
+    }
+
+    std::string newPassword, confirmPassword;
+    do {
+        std::cout << "Enter new password for " << mem->username << ": ";
+        std::cin >> newPassword;
+        std::cout << "Confirm new password: ";
+        std::cin >> confirmPassword;
+    } while (newPassword != confirmPassword || !validate.password(newPassword));
+
+    mem->setPassword(newPassword);
+    std::cout << "Password for member " << mem->username  << " has been reset.\n";
+    return true;
+}
 
 //member
     //member login (feature 4)
@@ -471,15 +571,14 @@ bool System::memberLogin() {
     //end login
 
 
-    //member register (feature 1)
+//Feature 1: A non-member can register to become a member (information is recorded)
 bool System::memberRegister() {
-      std::string username, password,  firstName,  lastName,
-            phoneNumber,  email, address;
+    std::string username, password,  firstName,  lastName,phoneNumber,  email, address;
 
     std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
 
     //Enter member information
-    std::cout << "\t--> CUSTOMER REGISTRATION <--\n\n";
+    std::cout << "\t--> MEMBER REGISTRATION <--\n\n";
     do {
         std::cout << "Enter a username: ";
         std::cin.ignore();
@@ -506,37 +605,40 @@ bool System::memberRegister() {
         std::getline(std::cin, phoneNumber);
     } while (!validate.phoneNumber(phoneNumber , this));
 
+    do {
         std::cout << "\nEnter your email: ";
         std::getline(std::cin, email);
+    } while (!validate.email(email, this));
+        
     
     do {
         std::cout << "\nEnter your address: ";
         std::getline(std::cin, address);
     } while (!validate.address(address , this));
-    
-
 
     auto *newMember = new Member(systemMemberList.size() + 1, username, password, firstName, lastName, phoneNumber, email, address);
     //Add member to member list
     addMember(newMember);
     return true;
 }
-    //end register
+    //End register
 
 
-    //menu for member
+    //Menu for member
 void System::memberMenu(){
     clearScreen();
     std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     std::cout << "\t--> MEMBER MENU <--\n\n"
-              << "--> 1.\tView account info\n"
-              << "--> 2.\tMotorbike Menu\n"
-              << "--> 3.\tSearch for available motorbike\n"
-              << "--> 4.\tView motorbike request list\n"
-              << "--> 5.\tView unrated renter list\n"
-              << "--> 6.\tView currently rented motorbike\n"
-              << "--> 7.\tSign out\n";
-    switch(choiceFunc(1,7)){
+              << "--> 1.\tView your information\n"
+              << "--> 2.\tView other members' information\n"
+              << "--> 3.\tSkill supporting menu\n"
+              << "--> 4.\tSearch for available supporters\n"
+              << "--> 5.\tView skill request list\n"
+              << "--> 6.\tView currently supported skill\n"
+              << "--> 7.\tRate supporter as host\n"
+              << "--> 8.\tBlock member\n"
+              << "--> 9.\tSign out\n";
+    switch(choiceFunc(1,9)){
         case 1:
             //View member info
             currentMember->showMemInfo();
@@ -547,7 +649,8 @@ void System::memberMenu(){
 
         case 2:
             //Go to member list
-            memberListMenu();
+            // memberListMenu();
+            viewMemberInformation();
             break;
 
         case 3:
@@ -571,6 +674,11 @@ void System::memberMenu(){
             break;
 
         case 7:
+            break;
+        case 8:
+            blockMemberInteraction(currentMember);
+            break;
+        case 9:
             //Sign out and go back to main menu
             setCurrentMember(nullptr);
             clearScreen();
@@ -580,6 +688,22 @@ void System::memberMenu(){
 }
     //end menu
 
+void System::viewMemberInformation() {
+    std::cout << "Select a member to view their information:\n";
+    Member* selectedMember = chooseMember();
+
+    if (selectedMember == nullptr) {
+        std::cout << "Returning to the previous menu...\n";
+        return;
+    }
+
+    if (selectedMember->isBlockedForViewing(currentMember)) {
+        std::cout << "You are blocked from viewing this member's information.\n";
+        return;
+    }
+
+    selectedMember->showMemInfo();
+}
 
     //list menu (feature 5)
 void System::memberListMenu(){

@@ -95,9 +95,21 @@ public:
 
     bool memberEnterSkillInfo();
 
+    bool adminChangePassword();
+
+    void displayMemberList();
+
+    Member* chooseMember();
+
+    bool getUserYesNoResponse();
+
+    bool blockMemberInteraction(Member* requestingMember);
+
     void guestMenu();
 
-    void guestViewSkillList();
+    void viewMemberInformation();
+
+    void guestViewSupporterList();
 
     void memberViewSkillRequestListMenu();
 

@@ -58,7 +58,7 @@ std::tuple<double, double, double> Member::getRatingScore() {
 }
 
 
-// Show member's information
+//Feature 4: A member can login with the registered username and password, and can view all of his/her information.
 bool Member::showMemInfo() {
     std::cout << "\n+ Username: " << username << '\n';
     std::cout << "+ Full name: " << get_name() << '\n';
@@ -357,16 +357,15 @@ std::string Member::viewSupporterRateHost() {
 
 bool Member::guestViewSupporterInfo() {
     std::cout << "The supporter's information:\n";
-    std::cout << "+ Username: " << username << '\n';
-    std::cout << "+ Full name: " << get_name() << '\n';
-    std::cout << "+ Phone number: " << phoneNumber << '\n';
-    std::cout << "+ Email: " << email << '\n';
-    std::cout << "+ Address: " << address << '\n';
-    std::cout << "+ Credit points: " << creditPoints << '\n';
-    std::cout << "+ Skill: " << ownedSkill->getSkillInfo() << '\n';
+    std::cout << "Username: " << username << ', ';
+    std::cout << "Full name: " << get_name() << ', ';
+    std::cout << "Phone number: " << phoneNumber << ', ';
+    std::cout << "Email: " << email << ', ';
+    std::cout << "Address: " << address << ', ';
+    std::cout << "Credit points: " << creditPoints << ', ';
+    std::cout << "Skill: " << ownedSkill->getSkillInfo() << '\n';
     std::cout << '\n';
     return true;
-
 }
 
 bool Member::blockMember(Member* memberToBlock, bool blockView, bool blockRequestSupport) {
@@ -384,6 +383,10 @@ bool Member::blockMember(Member* memberToBlock, bool blockView, bool blockReques
     blockedMemberList.emplace_back(memberToBlock, blockView, blockRequestSupport);
 
     return true;
+}
+
+void Member::setPassword(const std::string& newPassword) {
+    password = newPassword;
 }
 
 bool Member::isMemberBlocked(Member* member) {
