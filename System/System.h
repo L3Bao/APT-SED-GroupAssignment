@@ -8,6 +8,8 @@
 #include <string>
 #include <ctype.h>
 #include "Validation\Validation.h"
+#include "Middleware\StorageManager\Loader.h"
+#include "Middleware\StorageManager\Saver.h"
 
 
 class Skill;
@@ -55,11 +57,9 @@ public:
 
     bool memberViewRentList();
 
-    bool turnbackSkill(int turnbackRentSkillID);
+    bool completeRequest(int turnbackRentSkillID);
 
-    bool memberViewUnratedRenterList();
-
-    bool memberRateRenter(int renterID);
+    bool memberRateHost(Member* host);
 
     bool memberRateSkill(Skill* ratedSkill);
 
@@ -68,10 +68,6 @@ public:
     void adminMenu();
 
     bool adminLogin();
-
-    void adminViewMemberList();
-
-    void adminViewSkillList();
 
     void memberMenu();
 
@@ -93,8 +89,6 @@ public:
 
     bool memberViewSkillReviewList(int skillID, DateTime *sD, DateTime *eD);
 
-    void memberUnratedRenterRatingMenu(int member);
-
     void memberViewRentedSkill();
 
     bool memberLeaveReview(Skill *turnbackSkill);
@@ -104,8 +98,6 @@ public:
     void guestMenu();
 
     void guestViewSkillList();
-
-    void UnrateMemRatingMenu();
 
     void memberViewSkillRequestListMenu();
 
@@ -117,9 +109,9 @@ public:
 
     void systemExit();
 
-    friend class InputStorageManager;
+    friend class Loader;
 
-    friend class OutputStorageManager;
+    friend class Saver;
 
 };
 

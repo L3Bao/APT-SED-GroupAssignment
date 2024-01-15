@@ -129,7 +129,7 @@ bool System::isSuitableSkill(DateTime *startDate, DateTime *endDate, int cityID,
         return false;
     }
 
-    // If the motorbike is not available from the start and end date
+    // If the supporter is not available from the start and end date
     if (*startDate - *(skill->availableFrom) < 0 || *skill->availableTo - *endDate < 0) {
         return false;
     }
@@ -162,20 +162,9 @@ bool System::isSuitableSkill(DateTime *startDate, DateTime *endDate, int cityID,
     return true;
 }
 
-//Function to view motorbike reviews
-bool System:: memberViewSkillReviewList(int SkillID, DateTime *sD, DateTime *eD) {
-    if (SkillID>=  memberSuitableSkillList.size()) {
-        return false;
-    }
-
-    auto skill =  memberSuitableSkillList[SkillID];
-    std::cout << skill->viewSkillReview();
-    return true;
-}
-
-//Function to send request to the motorbike owner
+//Function to send request to the supporter
 bool System::memberSendRequest(DateTime *startDate, DateTime *endDate, int SkillID) {
-    if (SkillID >= memberSuitableSkillList.size()) {
+    if (SkillID >= suitableSkillsList.size()) {
         return false;
     }
 
@@ -191,7 +180,7 @@ bool System::memberSendRequest(DateTime *startDate, DateTime *endDate, int Skill
     auto *request = new Request(startDate, endDate, currentMember);
 
     // Add the request to the request list of the motorbike
-    memberSuitableSkillList[SkillID]->addRequestToSkillRequestList(request);
+    suitableSkillsList[SkillID]->addRequestToSkillRequestList(request);
 
     // Add the request to the request list of the member
     currentMember->addToRequestList(request);
@@ -199,11 +188,11 @@ bool System::memberSendRequest(DateTime *startDate, DateTime *endDate, int Skill
     return true;
 }
 
-//Function to accept motorbike rent request
+//Function to accept host request
 bool System::memberAcceptRequest(int requestID) {
 
     // Current member accept the request
-    currentMember->acceptTheRequest(requestID);
+    currentMember->acceptRequest(requestID);
 
     return true;
 }
@@ -211,43 +200,51 @@ bool System::memberAcceptRequest(int requestID) {
 //Function to view rent list
 bool System::memberViewRentList() {
 
-    currentMember->showRenter();
+    currentMember->showCurrentSkillRent();
     return true;
 }
 
 //Function for current member to turnback the motorbike
-bool System::turnbackSkill(int turnbackRentSkillID) {
-    currentMember->turnbackSkill(turnbackRentSkillID);
+bool System::completeRequest(int completedSkillID) {
+    currentMember->completeRequest(completedSkillID);
     return true;
 }
 
-//Function to view unrated renters
-bool System::memberViewUnratedRenterList() {
-    return currentMember->showUnrateMemList();
-}
+//Function to rate host
+bool System::memberRateHost(Member* host) {
+    if (host == nullptr) {
+        std::cout << "Invalid host. Cannot rate.\n";
+        return false;
+    }
 
-//Function to rate renter
-bool System::memberRateRenter(int renterID) {
-    int rating;
+    int hostRating;
     std::string comment;
-    std::cout << "\nRate this member from 1 to 10\n";
-    rating = choiceFunc(1,10);
+    std::cout << "\nRate this member from 1 to 5\n";
+    hostRating = choiceFunc(1, 5); // Ensure choiceFunc limits choice between 1 and 5
+
     std::cout << "\nEnter a comment about this member: ";
-    std::cin.ignore();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(std::cin, comment);
-    return currentMember->reviewRenter(renterID, rating, comment);
+
+    return currentMember->rateHost(host, hostRating, comment);
 }
 
 //Function to rate skill
-bool System:: memberRateSkill(Skill *ratedSkill) {
-    int rating;
+bool System::memberRateSkill(Skill *ratedSkill) {
+    int skillRating, supporterRating;
     std::string comment;
-    std::cout << "\n---Rate this skill from 1 to 5---\n";
-    rating = choiceFunc(1,10);
+
+    std::cout << "\n---Rate the Skill from 1 to 5---\n";
+    skillRating = choiceFunc(1, 5);  // Assuming choiceFunc ensures the choice is between 1 and 5
+
+    std::cout << "\n---Rate the Supporter from 1 to 5---\n";
+    supporterRating = choiceFunc(1, 5);
+
     std::cout << "\nEnter a comment about this skill: ";
-    std::cin.ignore();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(std::cin, comment);
-    return currentMember->reviewSkill(ratedSkill, rating, comment);
+
+    return currentMember->rateSkill(ratedSkill, skillRating, supporterRating, comment);
 }
 
 //Function for entering choice
@@ -280,7 +277,7 @@ int System::choiceFunc(int a, int b) {
 
 //main menu
 void System::mainMenu() {
-    std :: cout << "\n\n\n    *    MOTORBIKE RENTAL APPLICATION    *\n\n\n";
+    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     cout << "\t--> MAIN MENU <--\n\n"
          << "\t--> 1. Guest\n"
          << "\t--> 2. Member\n"
@@ -320,9 +317,9 @@ void System::mainMenu() {
 //guest (feature 2)
 void System::guestMenu() {
     clearScreen();
-    std :: cout << "\n\n\n    *    SKILL RENTAL APPLICATION    *\n\n\n";
+    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     std::cout << "\t--> GUEST MENU <--\n\n"
-              << "--> 1.\tView SKILL list\n"
+              << "--> 1.\tView Supporter\n"
               << "--> 2.\tRegister for an account\n"
               << "--> 3.\tBack to main menu\n";
     switch (choiceFunc(1, 3)){
@@ -349,7 +346,7 @@ void System::guestMenu() {
 void System::guestViewSkillList(){
     int choice;
     clearScreen();
-    std :: cout << "\n\n\n    *    SKILL RENTAL APPLICATION    *\n\n\n";
+    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     std::cout << "\n\t\t--> SKILL LIST <-- \n"
               << "ID    Information \n\n";
     //Print skill list
@@ -364,7 +361,6 @@ void System::guestViewSkillList(){
         guestMenu();
     } else {
         //View motorbike info
-        highlighter();
         cout << "\nYou have chosen motorbike number " << choice;
         std::cout << "\n" << systemSkillList[choice - 1]->viewSkillInfoByGuest();
         std::cout << "\n1. Back to skill list\n";
@@ -383,7 +379,7 @@ void System::guestViewSkillList(){
 //admin (feature 5)
 bool System::adminLogin() {
     clearScreen();
-    std :: cout << "\n\n\n    *    SKILL RENTAL APPLICATION    *\n\n\n";
+    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     std::string username, password;
     //Enter admin username and password
     std::cout << "\t--> ADMIN LOGIN <--\n\n"
@@ -408,12 +404,11 @@ bool System::adminLogin() {
 
 void System::adminMenu() {
     clearScreen();
-    std :: cout << "\n\n\n    *    SKILL RENTAL APPLICATION    *\n\n\n";
+    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     std::cout << "\t--> ADMIN MENU <--\n\n"
-              << "--> 1.\tMember List \n"
-              << "--> 2.\tSkill List \n"
-              << "--> 3.\tSign out";
-    switch (choiceFunc(1, 3)){
+              << "--> 1.\tChange user's password \n"
+              << "--> 2.\tSign out";
+    switch (choiceFunc(1, 2)){
         case 1:
             //View member list
             clearScreen();
@@ -421,11 +416,6 @@ void System::adminMenu() {
             break;
 
         case 2:
-            //View motorbike list
-            adminViewSkillList();
-            break;
-
-        case 3:
             //Back to main menu
             clearScreen();
             mainMenu();
@@ -433,96 +423,13 @@ void System::adminMenu() {
     }
 }
 
-void System::adminViewMemberList() {
-    int choice;
-    std :: cout << "\n\n\n    *    MOTORBIKE RENTAL APPLICATION    *\n\n\n";
-    std::cout << "\n\t--> MEMBER LIST <-- \n\n"
-              << "ID    Name  \n";
-    //Print member list
-    for (Member *mem : systemMemberList){
-        std::cout << std::setw(6) << std::left << (std::to_string(mem->memberID) + ".");
-        std::cout << mem->get_name() << "\n";
-    }
-    std::cout << systemMemberList.size()+1 << ".\tBack to admin menu\n";
-    choice = choiceFunc(1, systemMemberList.size()+1);
-    
-    clearScreen();
-    system("clear");
-    cout << "    *    SKILL RENTAL APPLICATION    *\n";
-    if (choice == systemMemberList.size()+1){
-        //Back to admin menu
-        adminMenu();
-    } else {
-        //View member info
-        systemMemberList[choice - 1]->showMemInfo();
-        std::cout << "1. View member reviews\n"
-                  << "2. Back to member list\n";
-        switch(choiceFunc(1, 2)){
-            case 1:
-                //View member reviews
-                std::cout << systemMemberList[choice - 1]->viewMemberReview();
-                std::cout << "1. Back to member list\n";
-                choiceFunc(1, 1);
-                //Back to member list
-                adminViewMemberList();
-                break;
-            case 2:
-                //Back to member list
-                adminViewMemberList();
-                break;
-        }
-
-    }
-}
-
-void System::adminViewSkillList() {
-    int choice;
-    clearScreen();
-    std :: cout << "\n\n\n    *    MOTORBIKE RENTAL APPLICATION    *\n\n\n";
-    std::cout << "\n\t\t--> MOTORBIKE LIST <-- \n"
-              << "ID    Information \n\n";
-    //Print motorbike list
-    for (Skill *mot : systemSkillList){
-        std::cout << std::setw(6) << std::left << std::to_string(mot->skillID) + ".";
-        std::cout << mot->getSkillInformation() << "\n";
-    }
-    std::cout << systemSkillList.size()+1 << ". \tBack to Admin Menu\n";
-    choice = choiceFunc(1, systemSkillList.size()+1);
-    if (choice == systemSkillList.size()+1){
-        adminMenu();
-    } else {
-        clearScreen();
-        //Print motorbike info
-        std :: cout << "\n\n\n    *    MOTORBIKE RENTAL APPLICATION    *\n\n\n";
-        std::cout << "\n" << systemSkillList[choice - 1]->viewSkillInfo() << "\n\n";
-        std::cout << "--> 1.\tView reviews\n"
-                  << "--> 2.\tBack to motorbike list\n";
-        switch(choiceFunc(1, 2)){
-            case 1:
-                //Motorbike review
-                std::cout << systemSkillList[choice - 1]->viewSkillReview();
-                std::cout << "1. Back to motorbike list";
-                choiceFunc(1, 1);
-                //Back to motorbike list
-                adminViewSkillList();
-                break;
-            case 2:
-                //Back to motorbike list
-                adminViewSkillList();
-                break;
-        }
-    }
-}
-//end admin
-
-
 
 
 //member
     //member login (feature 4)
 void System::memberLoginMenu() {
     clearScreen();
-    std :: cout << "\n\n\n    *    SKILL RENTAL APPLICATION    *\n\n\n";
+    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     std::cout << "\t--> MEMBER LOGIN MENU <--\n\n"
               << "--> 1.\tLogin\n"
               << "--> 2.\tBack to main menu\n";
@@ -569,7 +476,7 @@ bool System::memberRegister() {
       std::string username, password,  firstName,  lastName,
             phoneNumber,  email, address;
 
-    std :: cout << "\n\n\n    *    SKILL RENTAL APPLICATION    *\n\n\n";
+    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
 
     //Enter member information
     std::cout << "\t--> CUSTOMER REGISTRATION <--\n\n";
@@ -620,7 +527,7 @@ bool System::memberRegister() {
     //menu for member
 void System::memberMenu(){
     clearScreen();
-    std :: cout << "\n\n\n    *    MOTORBIKE RENTAL APPLICATION    *\n\n\n";
+    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     std::cout << "\t--> MEMBER MENU <--\n\n"
               << "--> 1.\tView account info\n"
               << "--> 2.\tMotorbike Menu\n"
@@ -676,7 +583,7 @@ void System::memberMenu(){
 
     //list menu (feature 5)
 void System::memberListMenu(){
-    std :: cout << "\n\n\n    *    MOTORBIKE RENTAL APPLICATION    *\n\n\n";
+    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     cout << "\t--> LIST MENU <--\n\n";
     //Check if member has an owned motorbike
     if (currentMember->ownedSkill != nullptr){
@@ -995,53 +902,6 @@ void System:: memberSuitableSkillMenu() {
 }
 
     //end view motorbike request
-
-
-    //view unrated renter (feature 12)
-void System::UnrateMemRatingMenu() {
-    //Check if member has an owned motorbike
-    if (currentMember->ownedSkill == nullptr){
-        std::cout << "\nYou don't have an owned motorbike.\n\n"
-                  << "1. Back to member menu\n";
-        choiceFunc(1,1);
-        memberMenu();
-    }
-    //Unrated renter list
-    std::cout << "\nUnrated Renter List: \n\n";
-    currentMember->showUnrateMemList();
-    std::cout << "\n" << currentMember->ownedSkill->unratedRenterList.size()+1 << ". Back to member menu\n";
-    int choice = choiceFunc(1, currentMember->ownedSkill->unratedRenterList.size() + 1);
-    if (choice == currentMember->ownedSkill->unratedRenterList.size() + 1){
-        //Back to member menu
-        memberMenu();
-    } else {
-        //View unrated Renter info
-        memberUnratedRenterRatingMenu(choice - 1);
-    }
-}
-
-void System::memberUnratedRenterRatingMenu(int member){
-    currentMember->ownedSkill->unratedRenterList[member]->rentedByMember->showMemInfo();
-    std::cout << "-->\t1. Rate this member\n"
-              << "-->\t2. Back to unrated renter list\n";
-    switch (choiceFunc(1, 2)){
-        case 1:
-            //Rate unrated renter
-            if (memberRateRenter(member)){
-                std::cout << "\nSuccessfully rated member\n";
-            } else {
-                std::cout << "\nRating failed\n";
-            }
-            UnrateMemRatingMenu();
-            break;
-        case 2:
-            //Back to unrated renter
-            UnrateMemRatingMenu();
-            break;
-    }
-
-}
-    //end view unrated renter
 
 
     //view currently rented motorbike (turnback motorbike)
