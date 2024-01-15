@@ -29,6 +29,8 @@ public:
 
     bool name(std::string name);
 
+    bool rating(std::string ratingStr, double rating);
+
     friend class System;
 
 };

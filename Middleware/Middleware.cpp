@@ -53,22 +53,3 @@ bool isNumber(std::string &str) {
     }
     return true;
 }
-
-bool isDouble(std::string &str){
-    int dotCount = 0;
-    for (int i = 0; i < str.length(); i++){
-        if (i == 0 && str[i] == '-') {
-            continue;
-        }
-        if (str[i] == '.'){
-            dotCount++;
-        }
-        if (str[i] != '.' && !std::isdigit(str[i])){
-            return false;
-        }
-    }
-    if (dotCount > 1){
-        return false;
-    }
-    return true;
-}

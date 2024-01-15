@@ -58,14 +58,14 @@ void System::addAdmin(Admin *admin) {
 }
 
 //Function to show suitable supporter list
-bool System::memberSearchSuitableSkillList(DateTime *startDate, DateTime *endDate, int cityID) {
+bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTime, int cityID) {
     memberSuitableSkillList.clear();
 
     // If that member already send another request for this supporter and that request is overlapped with the current request
     for (auto &request: currentMember->memberRequestList) {
 
         // If two time frame are not overlapped
-        if (*request->requestTo < *startDate || *endDate < *request->requestFrom) {
+        if (*request->requestTo < *startTime || *endTime < *request->requestFrom) {
             continue;
         }
 
@@ -75,7 +75,7 @@ bool System::memberSearchSuitableSkillList(DateTime *startDate, DateTime *endDat
 
     // Find the avalaible supporter
     for (auto &skill : systemSkillList) {
-    if (isSuitableSkill(startDate, endDate, cityID - 1, skill)) {
+    if (isSuitableSkill(startTime, endTime, cityID - 1, skill)) {
         suitableSkillsList.push_back(skill); // Add the skill
         // If you also want to keep track of the members
         memberSuitableSkillList.push_back(skill->skillOwner); // Add the skill owner
@@ -111,7 +111,7 @@ bool System::memberSearchSuitableSkillList(DateTime *startDate, DateTime *endDat
 }
 
 //Function to check if the supporter is suitable to the member
-bool System::isSuitableSkill(DateTime *startDate, DateTime *endDate, int cityID, Skill *skill) {
+bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID, Skill *skill) {
 
     auto [avgSkillRating, avgSupporterRating, avgHostRating] = skill->skillOwner->getRatingScore();
 
@@ -131,13 +131,13 @@ bool System::isSuitableSkill(DateTime *startDate, DateTime *endDate, int cityID,
     }
 
     // If the supporter is not available from the start and end date
-    if (*startDate - *(skill->availableFrom) < 0 || *skill->availableTo - *endDate < 0) {
+    if (*startTime - *(skill->availableFrom) < 0 || *skill->availableTo - *endTime < 0) {
         return false;
     }
 
     // If the user do not have enough credit Points
-    int differenceBetweenStartAndEndDate = *endDate - *startDate;
-    if (differenceBetweenStartAndEndDate * skill->creditCostPerHour > currentMember->creditPoints) {
+    int differenceBetweenStartAndendTime = *endTime - *startTime;
+    if (differenceBetweenStartAndendTime * skill->creditCostPerHour > currentMember->creditPoints) {
         return false;
     }
 
@@ -149,9 +149,9 @@ bool System::isSuitableSkill(DateTime *startDate, DateTime *endDate, int cityID,
     // Loop over the rent status of the motorbike for checking
     for (auto &rent: skill->skillRentList) {
 
-        // If the startDate and endDate is not rented by another
-        if ((startDate < rent->rentFrom && endDate < rent->rentTo)
-            || (startDate > rent->rentFrom && endDate > rent->rentTo)) {
+        // If the startTime and endTime is not rented by another
+        if ((startTime < rent->rentFrom && endTime < rent->rentTo)
+            || (startTime > rent->rentFrom && endTime > rent->rentTo)) {
             continue;
         }
 
@@ -164,13 +164,13 @@ bool System::isSuitableSkill(DateTime *startDate, DateTime *endDate, int cityID,
 }
 
 //Function to send request to the supporter
-bool System::memberSendRequest(DateTime *startDate, DateTime *endDate, int SkillID) {
+bool System::memberSendRequest(DateTime *startTime, DateTime *endTime, int SkillID) {
     if (SkillID >= suitableSkillsList.size()) {
         return false;
     }
 
     for (auto &memberRequest: currentMember->memberRequestList) {
-        if (*(memberRequest->requestTo) < *startDate || *endDate < *(memberRequest->requestFrom)) {
+        if (*(memberRequest->requestTo) < *startTime || *endTime < *(memberRequest->requestFrom)) {
             continue;
         }
 
@@ -178,7 +178,7 @@ bool System::memberSendRequest(DateTime *startDate, DateTime *endDate, int Skill
     }
 
     // Create an object for the request
-    auto *request = new Request(startDate, endDate, currentMember);
+    auto *request = new Request(startTime, endTime, currentMember);
 
     // Add the request to the request list of the motorbike
     suitableSkillsList[SkillID]->addRequestToSkillRequestList(request);
@@ -654,22 +654,22 @@ void System::memberMenu(){
             break;
 
         case 3:
+            //Go to member list
+            memberListMenu();
+            break;
+
+        case 4:
             //Go to search suitable motorbike
             memberSearchSuitableSkillMenu();
             break;
 
-        case 4:
-            //View motorbike requests
+        case 5:
+            //View skill requests
             memberViewSkillRequestListMenu();
             break;
 
-        case 5:
-            //View unrated renter
-            UnrateMemRatingMenu();
-            break;
-
         case 6:
-            //View rented motorbike
+            //View currently supported skill
             memberViewRentedSkill();
             break;
 
@@ -709,19 +709,19 @@ void System::viewMemberInformation() {
 void System::memberListMenu(){
     std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
     cout << "\t--> LIST MENU <--\n\n";
-    //Check if member has an owned motorbike
+    //Check if member has an owned skill
     if (currentMember->ownedSkill != nullptr){
-        //Check if member's motorbike is listed
+        //Check if member's skill is listed
         if (currentMember->ownedSkill->isListed) {
-            //Print motorbike info
-            std::cout << "Currently listed motorbike:\n"
-                      << currentMember->ownedSkill->viewSkillInfo() << "\n";
+            //Print skill info
+            std::cout << "Currently listed skill:\n"
+                      << currentMember->ownedSkill->getSkillInfo() << "\n";
             if (currentMember->ownedSkill->skillRequestList.empty()) {
-                std::cout << "\n--> 1.\tUnlist motorbike\n"
+                std::cout << "\n--> 1.\tUnlist skill\n"
                           << "--> 2.\tBack to member menu\n";
                 switch (choiceFunc(1, 2)) {
                     case 1:
-                        //Unlist motorbike
+                        //Unlist skill
                         memberUnlistSkill();
                         std::cout << "1. Back to list menu\n";
                         choiceFunc(1, 1);
@@ -738,14 +738,14 @@ void System::memberListMenu(){
                 memberMenu();
             }
         } else {
-            //List motorbike if motorbike isn't listed
-            std::cout << "Your motorbike isn't listed\n\n"
-                      << "--> 1. List your motorbike\n"
+            //List skill if skill isn't listed
+            std::cout << "Your skill isn't listed\n\n"
+                      << "--> 1. List your skill\n"
                       << "--> 2. Back to member menu\n";
             switch (choiceFunc(1, 2)){
                 case 1:
                     memberListSkill();
-                    std::cout << "\nSuccessfully listed motorbike\n\n";
+                    std::cout << "\nSuccessfully listed skill\n\n";
                     memberListMenu();
                     break;
                 case 2:
@@ -754,13 +754,13 @@ void System::memberListMenu(){
             }
         }
     } else {
-        //Enter motorbike info if member has no owned motorbike
-        std :: cout << "You haven't had any motorbike on our system yet!!\n";
-        cout << "1. Enter your motorbike info\n";
+        //Enter skill info if member has no owned skill
+        std :: cout << "You haven't had any skills on our system yet!!\n";
+        cout << "1. Enter your skill info\n";
         cout << "2. Back to member menu\n";
         switch (choiceFunc(1, 2)){
                 case 1:
-                    std::cout << "Please enter your MOTORBIKE INFO \n\n";
+                    std::cout << "Please enter your SKILL information \n\n";
                     memberEnterSkillInfo();
                     memberListMenu();
                     break;
@@ -772,57 +772,63 @@ void System::memberListMenu(){
 }
 
 bool System::memberEnterSkillInfo() {
-    std::string model, color, enginesize, transmode, year, motorbikeDescrip;
+    std::vector<std::string> skillList;
+    std::string skillName;
     int cityID;
-    //Enter motorbike info
-    std::cout << "Enter the motorbike information: \n"
-              << " - Motorbike model: ";
-    std::cin.ignore();
-    std::getline(std::cin, model);
-    std::cout << "- Color: ";
-    std::getline(std::cin, color);
-    std::cout << "- Engine size: ";
-    std::getline(std::cin, enginesize);
-    std::cout << "- Motorbike transmission mode: ";
-    std::getline(std::cin, transmode);
-    std::cout << "- Motorbike year of produce: ";
-    std::getline(std::cin, year);
-    std::cout << "- Motorbike description: ";
-    std::getline(std::cin, motorbikeDescrip);
+    
+    //Enter skill info
+    std::cout << "Enter the skill information: \n";
+    while(true) {
+        std::cout << " - Enter a skill (type 'done' to finish): ";
+        std::getline(std::cin, skillName);
+
+        if(skillName == "done") {
+            if(skillList.empty()) {
+                std::cout << "Please enter at least one skill.\n";
+            } else {
+                break;
+            }
+        } else {
+            skillList.push_back(skillName);
+        }
+    }         
 
     std::cout << "\nChoose the city your motorbike is in: \n\n"
               << "--> 1.\tHanoi\n"
-              << "--> 2.\tSaigon\n"
-              << "--> 3.\tHue\n";
-    cityID = choiceFunc(1, 3) - 1;
-    auto *newSkill = new Skill(systemSkillList.size() + 1, model, color, enginesize, transmode, year, cityID, SkillDescrip);
-    //Add the motorbike into the motorbike list
+              << "--> 2.\tSaigon\n";
+    cityID = choiceFunc(1, 2) - 1;
+    auto *newSkill = new Skill(systemSkillList.size() + 1, skillList, cityID);
+    //Add the skill into the skill list
     addSkill(newSkill);
-    //Set owned motorbike to the newly added motorbike
+    //Set owned skill to the newly added skill
     currentMember->setNewSkill(newSkill);
     return true;
 }
 
-        //list motorbike (feature 6.1)
+//Feature 5: A member can list himself/herself available to be booked (including skills can be performed, consuming points per hour, with/without minimum required host-rating score), and unlist if wanted.
 bool System::memberListSkill() {
-    std::string startDate, endDate, conPoints, minRentRating;
+    std::string startTime, endTime, conPoints;
     //Enter listing info (with validation)
     std::cout << "\nEnter listing information: \n";
-    int conPointsNum, minRentRatingNum;
+    int conPointsNum;
+    std::optional<double> minHostRatingOpt = std::nullopt;
 
     do{
         do {
-            std::cout << " - Start date(dd/mm/yyyy): ";
-            std::cin >> startDate;
-        } while (!validate.date(startDate));
+            std::cout << " - Start time(hh:mm): ";
+            std::cin >> startTime;
+        } while (!validate.time(startTime));
         do {
-            std::cout << "- End date(dd/mm/yyyy): ";
-            std::cin >> endDate;
-        } while (!validate.date(endDate));
-    } while (!validate.listDate(startDate, endDate));
+            std::cout << "- End date(hh:mm): ";
+            std::cin >> endTime;
+        } while (!validate.time(endTime));
+    } while (!validate.timeLater(startTime, endTime));
+
+    DateTime *sT = convertStringToDateTime(startTime);
+    DateTime *eT = convertStringToDateTime(endTime);
 
     do {
-        std::cout << "- Consuming points per day: ";
+        std::cout << "- Consuming points per hour: ";
         std::cin >> conPoints;
         if (!isNumber(conPoints)){
             std::cout << "Your option is not a number. Please try again.\n";
@@ -830,35 +836,41 @@ bool System::memberListSkill() {
     } while (!isNumber(conPoints));
     conPointsNum = convertStringToInt(conPoints);
 
-    do {
-        std::cout << "- Minimum Renter Rating: ";
-        std::cin >> minRentRating;
-        if (!isDouble(minRentRating)){
-            std::cout << "\nYour option is not a number. Please try again.\n";
-        }
-    } while (!isDouble(minRentRating));
-    minRentRatingNum = convertStringToDouble(minRentRating);
+    // Ask if the member wants to set a minimum host rating
+    std::cout << "Do you want to set a minimum required host-rating score? (yes/no): ";
+    if (getUserYesNoResponse()) {
+        std::string minHostRating;
+        double minHostRatingNum;
+        do {
+            std::cout << "- Minimum Host Rating (1.0-5.0): ";
+            std::cin >> minHostRating;
+        } while (!validate.rating(minHostRating, minHostRatingNum));
+        minHostRatingOpt = minHostRatingNum;
+    }
 
-    Date *sD = convertStringToDate(startDate), *eD = convertStringToDate(endDate);
     //Add listing info to data
-    currentMember->listMotorbike(sD, eD, conPointsNum, minRentRatingNum);
+    currentMember->listSkill(sT, eT, conPointsNum, minHostRatingOpt);
+
+    // Clean up dynamically allocated DateTime objects
+    delete sT;
+    delete eT;
+
     return true;
 }
 
-        //unlist motorbike (feature 6.2)
+//Feature 5: A member can list himself/herself available to be booked (including skills can be performed, consuming points per hour, with/without minimum required host-rating score), and unlist if wanted.
 bool System::memberUnlistSkill() {
-    if(currentMember->unListSkill()){
-        std::cout << "\nSuccessfully unlist motorbike \n\n";
+    if(currentMember->unlistSkill()){
+        std::cout << "\nSuccessfully unlist skill \n\n";
         return true;
     } else {
-        std::cout << "Failed to unlist motorbike. Please accept member request before unlisting the motorbike.\n";
+        std::cout << "Failed to unlist skill. Please accept member request before unlisting the skill.\n";
         return false;
     }
 }
-    //end list menu
 
 
-    //search suitable motorbike (feature 3, 7)
+//Feature 6: A member can search for all available suitable supporters for a specified city (suitable with his current credit points and rating score).
 void System::memberSearchSuitableSkillMenu(){
     std::string start, end;
     int cityID;
@@ -867,29 +879,28 @@ void System::memberSearchSuitableSkillMenu(){
     
     std::cout << "\nChoose the city you want to search for: \n\n"
               << "--> 1. Hanoi\n"
-              << "--> 2. Saigon\n"
-              << "--> 3. Hue\n";
-    cityID = choiceFunc(1, 3);
+              << "--> 2. Saigon\n";
+    cityID = choiceFunc(1, 2);
     do {
         do {
-            std::cout << "Enter start date (dd/mm/yyyy): ";
+            std::cout << "Enter start time (hh:mm): ";
             std::cin >> start;
-        } while (!validate.date(start));
+        } while (!validate.time(start));
 
         do {
-            std::cout << "\n\nEnter end date (dd/mm/yyyy): ";
+            std::cout << "\n\nEnter end time (hh:mm): ";
             std::cin >> end;
-        } while (!validate.date(end));
-    } while (!validate.listDate(start, end));
-    Date *startDate = convertStringToDate(start), *endDate = convertStringToDate(end);
+        } while (!validate.time(end));
+    } while (!validate.timeLater(start, end));
+    DateTime *startTime = convertStringToDateTime(start), *endTime = convertStringToDateTime(end);
     //Go to suitable motorbike list
-    memberSuitableSkillMenu(startDate, endDate, cityID);
+    memberSuitableSkillMenu(startTime, endTime, cityID);
 }
 
-void System::memberSuitableSkillMenu(Date *sD, Date *eD, int cityID) {
-    //Clear the suitable motorbike vector
+void System::memberSuitableSkillMenu(DateTime *sD, DateTime *eD, int cityID) {
+    //Clear the suitable skill vector
     memberSuitableSkillList.clear();
-    //Show suitable motorbikes
+    //Show suitable skills
     memberSearchSuitableSkillList(sD, eD, cityID);
     std::cout << memberSuitableSkillList.size() + 1 << ". Back to member menu\n";
     int choice = choiceFunc(1, memberSuitableSkillList.size() + 1);
@@ -897,48 +908,48 @@ void System::memberSuitableSkillMenu(Date *sD, Date *eD, int cityID) {
         //Back to member menu
         memberMenu();
     } else {
-        //View motorbike info
-        std::cout << memberSuitableMotorbikeList[choice - 1]->viewMotorbikeInfo();
-        std::cout << "\n\n--> 1.\tRequest motorbike\n\n"
-                  << "--> 2.\tView motorbike reviews\n\n"
-                  << "--> 3.\tBack to motorbike list\n";
+        //View skill info
+        std::cout << memberSuitableSkillList[choice - 1]->showMemInfo();
+        std::cout << "\n\n--> 1.\tRequest supporter\n\n"
+                  << "--> 2.\tView supporter reviews\n\n"
+                  << "--> 3.\tBack to skill list\n";
         switch (choiceFunc(1,3)){
             case 1:
-                //Send motorbike request to the owner of the motorbike and go back to member menu
+                //Send request to the supporter and go back to member menu
                 memberSendRequest(sD, eD, choice - 1);
                 std::cout << "\n\tRequest sent\n";
                 memberMenu();
                 break;
             case 2:
-                //View motorbike reviews
+                //View supporter reviews
                 memberViewSkillReviewList(choice - 1, sD, eD);
-                std::cout << "\n\n--> 1.\tRequest motorbike\n\n"
-                          << "--> 2.\tBack to motorbike list\n";
+                std::cout << "\n\n--> 1.\tRequest supporter\n\n"
+                          << "--> 2.\tBack to skill list\n";
                 switch (choiceFunc(1, 2)) {
                     case 1:
-                        //Send motorbike request to the owner of the motorbike
+                        //Send request to the supporter
                         memberSendRequest(sD, eD, choice - 1);
                         std::cout << "\tRequest sent\n";
                         memberMenu();
                         break;
                     case 2:
-                        //Back to suitable motorbike list
+                        //Back to suitable supporter list
                         memberSuitableSkillMenu(sD, eD, cityID);
                         break;
                 }
                 break;
             case 3:
-                //Back to suitable motorbike list
+                //Back to suitable supporter list
                 memberSuitableSkillMenu(sD, eD, cityID);
                 break;
         }
     }
 }
 
-void System::suitableSkillMenu(int choice, Date *sD, Date *eD, int cityID) {
-    std::cout << memberSuitableSkillList[choice - 1]->viewMotorbikeInfo() << "\n";
+void System::suitableSkillMenu(int choice, DateTime *sD, DateTime *eD, int cityID) {
+    std::cout << memberSuitableSkillList[choice - 1]->showMemInfo() << "\n";
     std::cout << "1. View reviews\n"
-              << "2. Request motorbike\n"
+              << "2. Request supporter\n"
               << "3. Back to motorbike list\n";
     switch (choiceFunc(1,3)){
         case 1:

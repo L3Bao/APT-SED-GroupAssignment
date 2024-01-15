@@ -171,3 +171,15 @@ bool Validation::timeLater(std::string startTime, std::string endTime) {
         return false;
     }
 }
+
+bool Validation::rating(std::string ratingStr, double rating) {
+     try {
+            rating = std::stod(ratingStr);  // Convert string to double
+            if (rating >= 1.0 && rating <= 5.0) {
+                return true;  // Valid rating
+            }
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Invalid format: Rating must be a number.\n";
+        }
+        return false;  // Invalid rating
+}

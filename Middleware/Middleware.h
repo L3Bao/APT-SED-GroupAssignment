@@ -10,5 +10,4 @@ double convertStringToDouble(std::string &str);
 DateTime* convertStringToDateTime(std::string &str);
 bool isNumber(std::string &str);
 DateTime* getCurrentDate();
-bool isDouble(std::string &str);
 #endif //MIDDLEWARE_H
