@@ -1122,13 +1122,13 @@ void System::memberViewRentedSkill() {
         return true;
     }
 
-/*     //Save data to files when exiting the program;
+    //Save data to files when exiting the program;
 void System::systemExit() {
-    auto *outputStorageManager = new Loader();
+    /* auto *outputStorageManager = new Loader();
     outputStorageManager->outputStorageLoadDataFromSystem(this);
-    outputStorageManager->outputStorageToFileList();
+    outputStorageManager->outputStorageToFileList(); */
     std::exit;
-} */
+}
 
 void System::memberViewRenterReviewList(int choice) {
     auto skillRequestList = currentMember->ownedSkill->skillRequestList;

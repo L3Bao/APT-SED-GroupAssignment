@@ -115,7 +115,7 @@ public:
 
     int choiceFunc(int a, int b);
 
-    // void systemExit();
+    void systemExit();
 
     friend class Loader;
 
