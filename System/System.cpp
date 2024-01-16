@@ -1,16 +1,16 @@
 #include "System.h"
-#include "DateTime\DateTime.h"
-#include "Skill\Skill.h"
-#include "Member\Member.h"
-#include "Admin\Admin.h"
-#include "SkillRent\SkillRent.h"
-#include "MemberRent\MemberRent.h"
-#include "Request\Request.h"
-#include "Rating\Rating.h"
-#include "Validation\Validation.h"
-#include "Middleware\Middleware.h"
-/* #include "../StorageManager/InputData/InputData.h"
-#include "../StorageManager/OutputData/OutputData.h" */
+#include "../DateTime/DateTime.h"
+#include "../Skill/Skill.h"
+#include "../Member/Member.h"
+#include "../Admin/Admin.h"
+#include "../SkillRent/SkillRent.h"
+#include "../MemberRent/MemberRent.h"
+#include "../Request/Request.h"
+#include "../Rating/Rating.h"
+#include "../Validation/Validation.h"
+#include "../Middleware/Middleware.h"
+/* #include "Middleware\StorageManager\Loader.h"
+#include "Middleware\StorageManager\Saver.h" */
 #include <string>
 #include <iostream>
 #include <chrono>
@@ -160,6 +160,16 @@ bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID,
 
     
 
+    return true;
+}
+
+bool System::memberViewSkillReviewList(int skillID, DateTime *sD, DateTime *eD) {
+    if (skillID >= suitableSkillsList.size()) {
+        return false;
+    }
+
+    auto skill = suitableSkillsList[skillID];
+    std::cout << skill->skillOwner->viewHostRateSupporter();
     return true;
 }
 
@@ -339,7 +349,7 @@ bool System::blockMemberInteraction(Member* requestingMember) {
 
 //main menu
 void System::mainMenu() {
-    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
+    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
     cout << "\t--> MAIN MENU <--\n\n"
          << "\t--> 1. Guest\n"
          << "\t--> 2. Member\n"
@@ -367,7 +377,7 @@ void System::mainMenu() {
             break;
 
         case 4:
-            systemExit();
+            // systemExit();
             break;
     }
 }
@@ -379,7 +389,7 @@ void System::mainMenu() {
 // Guest's Feature
 void System::guestMenu() {
     clearScreen();
-    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
+    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
     std::cout << "\t--> GUEST MENU <--\n\n"
               << "--> 1.\tView Supporter\n"
               << "--> 2.\tRegister for an account\n"
@@ -409,7 +419,7 @@ void System::guestMenu() {
 void System::guestViewSupporterList(){
     int choice;
     clearScreen();
-    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
+    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
     std::cout << "\n\t\t--> SUPPORTER LIST <-- \n"
               << "ID    Information \n\n";
     //Print supporter list
@@ -442,7 +452,7 @@ void System::guestViewSupporterList(){
 //admin (feature 5)
 bool System::adminLogin() {
     clearScreen();
-    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
+    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
     std::string username, password;
     //Enter admin username and password
     std::cout << "\t--> ADMIN LOGIN <--\n\n"
@@ -467,7 +477,7 @@ bool System::adminLogin() {
 
 void System::adminMenu() {
     clearScreen();
-    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
+    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
     std::cout << "\t--> ADMIN MENU <--\n\n"
               << "--> 1.\tChange user's password \n"
               << "--> 2.\tSign out";
@@ -529,7 +539,7 @@ bool System::adminChangePassword() {
     //member login (feature 4)
 void System::memberLoginMenu() {
     clearScreen();
-    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
+    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
     std::cout << "\t--> MEMBER LOGIN MENU <--\n\n"
               << "--> 1.\tLogin\n"
               << "--> 2.\tBack to main menu\n";
@@ -575,7 +585,7 @@ bool System::memberLogin() {
 bool System::memberRegister() {
     std::string username, password,  firstName,  lastName,phoneNumber,  email, address;
 
-    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
+    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
 
     //Enter member information
     std::cout << "\t--> MEMBER REGISTRATION <--\n\n";
@@ -627,7 +637,7 @@ bool System::memberRegister() {
     //Menu for member
 void System::memberMenu(){
     clearScreen();
-    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
+    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
     std::cout << "\t--> MEMBER MENU <--\n\n"
               << "--> 1.\tView your information\n"
               << "--> 2.\tView other members' information\n"
@@ -648,8 +658,6 @@ void System::memberMenu(){
             break;
 
         case 2:
-            //Go to member list
-            // memberListMenu();
             viewMemberInformation();
             break;
 
@@ -659,7 +667,7 @@ void System::memberMenu(){
             break;
 
         case 4:
-            //Go to search suitable motorbike
+            //Go to search suitable supporter
             memberSearchSuitableSkillMenu();
             break;
 
@@ -674,6 +682,7 @@ void System::memberMenu(){
             break;
 
         case 7:
+            memberRateHost(currentMember);
             break;
         case 8:
             blockMemberInteraction(currentMember);
@@ -707,7 +716,7 @@ void System::viewMemberInformation() {
 
     //list menu (feature 5)
 void System::memberListMenu(){
-    std :: cout << "\n\n\n    *    “TIME BANK” APP    *\n\n\n";
+    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
     cout << "\t--> LIST MENU <--\n\n";
     //Check if member has an owned skill
     if (currentMember->ownedSkill != nullptr){
@@ -974,17 +983,17 @@ void System::suitableSkillMenu(int choice, DateTime *sD, DateTime *eD, int cityI
     //end search suitable motorbike
 
 
-    //view motorbike request (feature 8, 9, 10, 11)
+//Feature 8: A member can view all requests to his listed skills.
 void System::memberViewSkillRequestListMenu() {
-    //Check if member has an owned motorbike
+    //Check if member has an owned skill
     if (currentMember->ownedSkill == nullptr){
-        std::cout << "You haven't entered your motorbike info\n"
+        std::cout << "You haven't entered your skill info\n"
                   << "1. Back to member menu\n";
         choiceFunc(1, 1);
         memberMenu();
-        //Check if owned motorbike is listed
+        //Check if owned skill is listed
     } else if (!currentMember->ownedSkill->isListed){
-        std::cout << "You haven't listed a motorbike yet!\n"
+        std::cout << "You haven't listed your skill yet!\n"
                   << "1. Back to member menu\n";
         choiceFunc(1, 1);
         memberMenu();
@@ -992,7 +1001,7 @@ void System::memberViewSkillRequestListMenu() {
 
     std::cout << "\nChoose a request for view more detail: \n\n";
 
-    //View motorbike request list
+    //View skill request list
     if (currentMember->showListOfRequest()) {
         std::cout << "\n" << currentMember->ownedSkill->skillRequestList.size() + 1 << ". Back to member menu\n\n";
         int choice = choiceFunc(1, currentMember->ownedSkill->skillRequestList.size() + 1);
@@ -1006,12 +1015,11 @@ void System::memberViewSkillRequestListMenu() {
             switch (choiceFunc(1, 3)) {
                 case 1: {
                     //Accept motorbike request
-                    if (currentMember->acceptTheRequest(choice - 1)) {
-                        std::cout << "Accepting Request successfully\n";
+                    if (currentMember->acceptRequest(choice - 1)) {
+                        std::cout << "Request accepted successfully\n";
                     } else {
                         std::cout << "Failed to accept request\n";
                     }
-//                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                     memberMenu();
                     break;
                 }
@@ -1039,38 +1047,38 @@ void System::memberViewSkillRequestListMenu() {
     //end view motorbike request
 
 
-    //view currently rented motorbike (turnback motorbike)
+    //view currently supported skill (complete the request)
 void System::memberViewRentedSkill() {
-    //Check if current member is renting any motorbike
+    //Check if current member doesn't request a supporter
     if (currentMember->memberRentList.empty()) {
-        std::cout << "\nYou are not currrently renting any motorbike\n\n"
+        std::cout << "\nYou haven't supported anyone yet\n\n"
                   << "1. Back to member menu\n";
         choiceFunc(1, 1);
         memberMenu();
     } else {
         //View rent list
-        currentMember->showRenter();
-        std::cout << "--> "<< currentMember->memberRentList.size() + 1 << ". Back to member menu\n";
+        currentMember->showCurrentSkillRent();
+        std::cout << currentMember->memberRentList.size() + 1 << ". Back to member menu\n";
         int choice = choiceFunc(1, currentMember->memberRentList.size() + 1);
         if (choice == currentMember->memberRentList.size() + 1) {
             //Back to member menu
             memberMenu();
         } else {
             //Check for renting information
-            auto rentMotorbike = currentMember->memberRentList[choice - 1]->rentSkill;
-            std::cout << "\n" << rentMotorbike->viewMotorbikeInfo() << "\n"
-                      << "\n-->\t1. Turnback the motorbike\n"
+            auto rentSkill = currentMember->memberRentList[choice - 1]->rentSkill;
+            std::cout << "\n" << rentSkill->getSkillInfo() << "\n"
+                      << "\n-->\t1. Complete the request\n"
                       << "\n-->\t2. Back to member menu\n";
             switch (choiceFunc(1, 2)){
                 case 1:{
-                    //Leave a motorbike review
-                    if(memberLeaveReview(rentMotorbike)){
-                        std::cout << "Motorbike reviewed\n";
+                    //Leave a supporter review
+                    if(memberLeaveReview(rentSkill)){
+                        std::cout << "Host reviewed\n";
                     }
                     //Turnback the motorbike
-                    if(currentMember->turnbackSkill(choice - 1)){
-                        std::cout << "\nMotorbike turnback successfully\n"
-                                  << "Thank you for using our service\n"
+                    if(currentMember->completeRequest(choice - 1)){
+                        std::cout << "\nYou have completed the request\n"
+                                  << "Thank you for your contribution\n"
                                   << "SEE YOU AGAIN!!!\n\n";
                     } else {
                         std::cout << "\nProcess unsuccessful\n";
@@ -1114,28 +1122,28 @@ void System::memberViewRentedSkill() {
         return true;
     }
 
-    //Save data to files when exiting the program;
+/*     //Save data to files when exiting the program;
 void System::systemExit() {
     auto *outputStorageManager = new Loader();
     outputStorageManager->outputStorageLoadDataFromSystem(this);
     outputStorageManager->outputStorageToFileList();
     std::exit;
-}
+} */
 
 void System::memberViewRenterReviewList(int choice) {
-    auto motorbikeRequestList = currentMember->ownedSkill->skillRequestList;
-    auto renter = motorbikeRequestList[choice - 1]->requestedByMember;
+    auto skillRequestList = currentMember->ownedSkill->skillRequestList;
+    auto host = skillRequestList[choice - 1]->requestedByMember;
     //Renter reviews
-    std::cout << renter->viewMemberReview();
+    std::cout << host->viewSupporterRateHost();
 
     std::cout << "\n\n--> 1.\tAccept the request\n\n"
               << "--> 2.\tBack to menu list\n";
 
     switch (choiceFunc(1, 2)) {
         case 1: {
-            //Accept motorbike request
-            if (currentMember->acceptTheRequest(choice - 1)) {
-                std::cout << "Accepting Request successfully\n";
+            //Accept the request
+            if (currentMember->acceptRequest(choice - 1)) {
+                std::cout << "Request accepted successfully\n";
             } else {
                 std::cout << "Failed to accept request\n";
             }

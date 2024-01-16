@@ -7,9 +7,9 @@
 #include <iomanip>
 #include <string>
 #include <ctype.h>
-#include "Validation\Validation.h"
-#include "Middleware\StorageManager\Loader.h"
-#include "Middleware\StorageManager\Saver.h"
+#include "../Validation/Validation.h"
+/* #include "Middleware\StorageManager\Loader.h"
+#include "Middleware\StorageManager\Saver.h" */
 
 
 class Skill;
@@ -51,8 +51,6 @@ public:
 
     bool memberSendRequest(DateTime *startDate, DateTime *endDate, int SkillID);
 
-    bool memberSeeRequestList();
-
     bool memberAcceptRequest(int requestID);
 
     bool memberViewRentList();
@@ -84,8 +82,6 @@ public:
     void memberSearchSuitableSkillMenu();
 
     void memberSuitableSkillMenu(DateTime *sD, DateTime *eD, int cityID);
-
-    void memberViewSkillRequestList(int skillID);
 
     bool memberViewSkillReviewList(int skillID, DateTime *sD, DateTime *eD);
 
@@ -119,7 +115,7 @@ public:
 
     int choiceFunc(int a, int b);
 
-    void systemExit();
+    // void systemExit();
 
     friend class Loader;
 

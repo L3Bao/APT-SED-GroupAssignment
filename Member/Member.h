@@ -2,8 +2,8 @@
 #define MEMBER_H
 
 #include "../User/User.h"
-// #include "../../Constant.h"
-// #include "../../Validation/Validation.h"
+#include "Member.h"
+#include "../Validation/Validation.h"
 #include <iostream>
 #include <vector>
 #include <optional>
@@ -13,6 +13,7 @@ class Rating;
 class Request;
 class MemberRent;
 class DateTime;
+class Member;
 
 struct MemberBlock {
     Member* blockedMember;

@@ -1,8 +1,9 @@
-#include "Skill\Skill.h"
-#include "Rating\Rating.h"
-#include "SkillRent\SkillRent.h"
-#include "DateTime\DateTime.h"
-#include "Member\Member.h"
+#include "Skill.h"
+#include "../Rating/Rating.h"
+#include "../SkillRent/SkillRent.h"
+#include "../DateTime/DateTime.h"
+#include "../Member/Member.h"
+#include "../Request/Request.h"
 
 #include <sstream>
 #include <algorithm>

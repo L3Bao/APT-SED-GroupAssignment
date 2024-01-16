@@ -7,9 +7,9 @@
 const std::string CITY_NAME_LIST[] = {"Hanoi", "Saigon"};
 class DateTime;
 class Rating;
-class Request;
 class SkillRent;
 class Member;
+class Request;
 
 class Skill {
     int skillID;

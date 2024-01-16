@@ -6,12 +6,12 @@
 #include <optional>
 
 #include "Member.h"
-#include "Rating\Rating.h"
-#include "SkillRent\SkillRent.h"
-#include "MemberRent\MemberRent.h"
-#include "Skill\Skill.h"
-#include "Middleware\Middleware.h"
-#include "Request\Request.h"
+#include "../Rating/Rating.h"
+#include "../SkillRent/SkillRent.h"
+#include "../MemberRent/MemberRent.h"
+#include "../Skill/Skill.h"
+#include "../Middleware/Middleware.h"
+#include "../Request/Request.h"
 
 //Constructor
 Member::Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName, std::string phoneNumber, std::string email, std::string address, int creditPoints) : User(std::move(username), std::move(password)) {
@@ -141,7 +141,7 @@ bool Member::showListOfRequest() {
 
         std::cout << "+ " << i+1 << ". " << request->requestFrom->toString() << " - " << request->requestFrom->toString() << ", " << "Member: " << request->requestedByMember->get_name() << ", Host Rating: " << hostRatingScore << '\n';
     }
-
+    return true;
 }
 
 bool Member::denyRequest(int acceptedRequestID) {
@@ -178,6 +178,8 @@ bool Member::denyRequest(int acceptedRequestID) {
         // Remove the request from the skill's request list
         ownedSkill->skillRequestList.erase(std::remove(ownedSkill->skillRequestList.begin(), ownedSkill->skillRequestList.end(), request), ownedSkill->skillRequestList.end());
     }
+
+    return true;
 }
 
 //Remove the request from member request list.
@@ -336,6 +338,7 @@ bool Member::rateHost(Member* host, int hostRating, std::string comment) {
     RatingScores scores(0, 0, hostRating);
 
     auto newRating = new Rating(scores, std::move(comment), this);
+    return true;
 }
 
 std::string Member::viewSupporterRateHost() {
@@ -370,16 +373,17 @@ std::string Member::viewHostRateSupporter() {
         auto reviewedByMember = rating->reviewedByMember;
         ss << "+ " << i+1 << ". " << reviewedByMember-> get_name() << " - " << comment << ", " << "Skill Rating: " << skillScore << ", Supporter Rating: " << supporterScore << '\n';
     }
+    return ss.str();
 }
 
 bool Member::guestViewSupporterInfo() {
     std::cout << "The supporter's information:\n";
-    std::cout << "Username: " << username << ', ';
-    std::cout << "Full name: " << get_name() << ', ';
-    std::cout << "Phone number: " << phoneNumber << ', ';
-    std::cout << "Email: " << email << ', ';
-    std::cout << "Address: " << address << ', ';
-    std::cout << "Credit points: " << creditPoints << ', ';
+    std::cout << "Username: " << username << ", ";
+    std::cout << "Full name: " << get_name() << ", ";
+    std::cout << "Phone number: " << phoneNumber << ", ";
+    std::cout << "Email: " << email << ", ";
+    std::cout << "Address: " << address << ", ";
+    std::cout << "Credit points: " << creditPoints << ", ";
     std::cout << "Skill: " << ownedSkill->getSkillInfo() << '\n';
     std::cout << '\n';
     return true;

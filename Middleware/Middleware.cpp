@@ -20,7 +20,7 @@ double convertStringToDouble(std::string &str) {
     return result;
 }
 
-DateTime* convertStringToDateTime(const std::string &str) {
+DateTime* convertStringToDateTime(std::string str) {
     std::stringstream ss {str};
     std::string segment;
     std::vector<int> timeSegments;
