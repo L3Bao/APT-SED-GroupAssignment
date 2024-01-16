@@ -48,17 +48,23 @@ bool Skill::removeRequestFromSkillRequestList(Request *request) {
     return true;
 }
 
-bool Skill::addRatingToSkill(Rating *skillRating) {
-    skillRatingList.push_back(skillRating);
+bool Skill::addCompletedSession(SkillRent* host) {
+    if (host == nullptr) {
+        // Guard against null pointers to ensure robustness
+        std::cerr << "Cannot add a null session to completed sessions.\n";
+        return false;
+    }
+
+    // Add the session to the completed sessions list
+    completedSkillList.push_back(host);
     return true;
 }
+
+
 
 Skill::~Skill() {
     for (auto request : skillRequestList) {
         delete request;
-    }
-    for (auto rating : skillRatingList) {
-        delete rating;
     }
     for (auto rent : skillRentList) {
         delete rent;

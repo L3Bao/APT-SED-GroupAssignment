@@ -60,9 +60,9 @@ public:
 
     bool acceptRequest(int acceptedRequestID);
 
-    bool completeRequest(int completedSkillID); 
+    bool completeRequest(int completedSkillID, bool isSupporter); 
 
-    bool rateSkill(Skill *supportedSkill, int skillRating, int supporterRating, std::string comment);
+    bool rateSupporterAndSkill(int reviewingHostID, int skillRating, int supporterRating, std::string comment);
 
     bool setNewSkill(Skill *skill); 
 
@@ -79,6 +79,8 @@ public:
     bool rateHost(Member* host, int hostRating, std::string comment);
 
     bool showCurrentSkillRent();
+
+    bool showCompletedSession();
 
     bool addRatingToMemberRentList(Rating *memberRating);
 

@@ -55,11 +55,11 @@ public:
 
     bool memberViewRentList();
 
-    bool completeRequest(int turnbackRentSkillID);
+    bool completeRequest(int turnbackRentSkillID, bool isSupporter);
 
     bool memberRateHost(Member* host);
 
-    bool memberRateSkill(Skill* ratedSkill);
+    bool memberRateSupporterAndSkill(int hostID);
 
     void mainMenu();
 
@@ -70,6 +70,10 @@ public:
     void memberMenu();
 
     void memberLoginMenu();
+
+    void completedSessionListMenu();
+
+    void hostRateSupporterMenu(int member);
 
     bool memberRegister();
 
@@ -86,8 +90,6 @@ public:
     bool memberViewSkillReviewList(int skillID, DateTime *sD, DateTime *eD);
 
     void memberViewRentedSkill();
-
-    bool memberLeaveReview(Skill *turnbackSkill);
 
     bool memberEnterSkillInfo();
 

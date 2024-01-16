@@ -47,7 +47,7 @@ void System::addMember(Member *member) {
     systemMemberList.push_back(member);
 }
 
-//Add motorbike after entering motorbike info
+//Add skill after entering skill info
 void System::addSkill(Skill *skill) {
     systemSkillList.push_back(skill);
 }
@@ -146,7 +146,7 @@ bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID,
         return false;
     }
 
-    // Loop over the rent status of the motorbike for checking
+    // Loop over the rent status of the skill for checking
     for (auto &rent: skill->skillRentList) {
 
         // If the startTime and endTime is not rented by another
@@ -190,7 +190,7 @@ bool System::memberSendRequest(DateTime *startTime, DateTime *endTime, int Skill
     // Create an object for the request
     auto *request = new Request(startTime, endTime, currentMember);
 
-    // Add the request to the request list of the motorbike
+    // Add the request to the request list of the skill
     suitableSkillsList[SkillID]->addRequestToSkillRequestList(request);
 
     // Add the request to the request list of the member
@@ -215,10 +215,14 @@ bool System::memberViewRentList() {
     return true;
 }
 
-//Function for current member to turnback the motorbike
-bool System::completeRequest(int completedSkillID) {
-    currentMember->completeRequest(completedSkillID);
-    return true;
+//Function for current member to turnback the skill
+bool System::completeRequest(int completedSkillID, bool isSupporter) {
+    if (currentMember == nullptr) {
+        std::cerr << "No current member set\n";
+        return false;
+    }
+
+    return currentMember->completeRequest(completedSkillID, isSupporter);
 }
 
 //Function to rate host
@@ -241,12 +245,12 @@ bool System::memberRateHost(Member* host) {
 }
 
 //Function to rate skill
-bool System::memberRateSkill(Skill *ratedSkill) {
+bool System::memberRateSupporterAndSkill(int hostID) {
     int skillRating, supporterRating;
     std::string comment;
 
     std::cout << "\n---Rate the Skill from 1 to 5---\n";
-    skillRating = choiceFunc(1, 5);  // Assuming choiceFunc ensures the choice is between 1 and 5
+    skillRating = choiceFunc(1, 5);
 
     std::cout << "\n---Rate the Supporter from 1 to 5---\n";
     supporterRating = choiceFunc(1, 5);
@@ -255,7 +259,7 @@ bool System::memberRateSkill(Skill *ratedSkill) {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(std::cin, comment);
 
-    return currentMember->rateSkill(ratedSkill, skillRating, supporterRating, comment);
+    return currentMember->rateSupporterAndSkill(hostID, skillRating, supporterRating, comment);
 }
 
 //Function for entering choice
@@ -645,7 +649,7 @@ void System::memberMenu(){
               << "--> 4.\tSearch for available supporters\n"
               << "--> 5.\tView skill request list\n"
               << "--> 6.\tView currently supported skill\n"
-              << "--> 7.\tRate supporter as host\n"
+              << "--> 7.\tView completed session list\n"
               << "--> 8.\tBlock member\n"
               << "--> 9.\tSign out\n";
     switch(choiceFunc(1,9)){
@@ -682,7 +686,7 @@ void System::memberMenu(){
             break;
 
         case 7:
-            memberRateHost(currentMember);
+            completedSessionListMenu();
             break;
         case 8:
             blockMemberInteraction(currentMember);
@@ -802,7 +806,7 @@ bool System::memberEnterSkillInfo() {
         }
     }         
 
-    std::cout << "\nChoose the city your motorbike is in: \n\n"
+    std::cout << "\nChoose the city your skill is in: \n\n"
               << "--> 1.\tHanoi\n"
               << "--> 2.\tSaigon\n";
     cityID = choiceFunc(1, 2) - 1;
@@ -884,7 +888,7 @@ void System::memberSearchSuitableSkillMenu(){
     std::string start, end;
     int cityID;
     //Enter search information
-    std::cout << "\nSearch for a suitable motorbike: \n\n";
+    std::cout << "\nSearch for a suitable skill: \n\n";
     
     std::cout << "\nChoose the city you want to search for: \n\n"
               << "--> 1. Hanoi\n"
@@ -902,7 +906,7 @@ void System::memberSearchSuitableSkillMenu(){
         } while (!validate.time(end));
     } while (!validate.timeLater(start, end));
     DateTime *startTime = convertStringToDateTime(start), *endTime = convertStringToDateTime(end);
-    //Go to suitable motorbike list
+    //Go to suitable skill list
     memberSuitableSkillMenu(startTime, endTime, cityID);
 }
 
@@ -980,7 +984,7 @@ void System::suitableSkillMenu(int choice, DateTime *sD, DateTime *eD, int cityI
             break;
     }
 }
-    //end search suitable motorbike
+    //end search suitable skill
 
 
 //Feature 8: A member can view all requests to his listed skills.
@@ -1014,7 +1018,7 @@ void System::memberViewSkillRequestListMenu() {
                       << "-->\t3. Back to menu\n";
             switch (choiceFunc(1, 3)) {
                 case 1: {
-                    //Accept motorbike request
+                    //Accept skill request
                     if (currentMember->acceptRequest(choice - 1)) {
                         std::cout << "Request accepted successfully\n";
                     } else {
@@ -1044,7 +1048,7 @@ void System::memberViewSkillRequestListMenu() {
     }
 }
 
-    //end view motorbike request
+    //end view skill request
 
 
     //view currently supported skill (complete the request)
@@ -1071,12 +1075,20 @@ void System::memberViewRentedSkill() {
                       << "\n-->\t2. Back to member menu\n";
             switch (choiceFunc(1, 2)){
                 case 1:{
-                    //Leave a supporter review
-                    if(memberLeaveReview(rentSkill)){
-                        std::cout << "Host reviewed\n";
+                    //Leave a host review
+                    Member* host = currentMember->ownedSkill->skillRentList[choice - 1]->rentedByMember;
+                    if (!host) {
+                        std::cerr << "Error: Host not found.\n";
+                        break;
                     }
-                    //Turnback the motorbike
-                    if(currentMember->completeRequest(choice - 1)){
+                    if (memberRateHost(host)) {
+                        std::cout << "Host reviewed.\n";
+                    } else {
+                        std::cout << "Failed to review host.\n";
+                    }
+
+                    //Complete the request
+                    if(currentMember->completeRequest(choice - 1, true)){
                         std::cout << "\nYou have completed the request\n"
                                   << "Thank you for your contribution\n"
                                   << "SEE YOU AGAIN!!!\n\n";
@@ -1097,30 +1109,46 @@ void System::memberViewRentedSkill() {
 //                memberMenu();
         }
     }
-}    //end view currently rented motorbike
+}    //end view currently rented skill
 
-
-    //leave review from client (feature 12)
-    bool System::memberLeaveReview(Skill *turnbackSkill) {
-        std::cout << "\nWould you like to leave a review?\n\n"
-                  << "-->\t1. Yes\n"
-                  << "-->\t2. No\n";
-        switch(choiceFunc(1, 2)){
-            case 1:
-                //Rate motorbike
-                if(memberRateSkill(turnbackSkill)){
-                    return true;
-                } else {
-                    std::cout << "\nFailed to leave a review\n";
-                    return false;
-                }
-                break;
-            case 2:
-                return false;
-                break;
-        }
-        return true;
+void System::completedSessionListMenu() {
+    // Check if member has owned a set of skills
+    if (currentMember->ownedSkill == nullptr) {
+        std::cout << "\nYou haven't owned a set of skills.\n\n" << "1. Back to member menu\n";
+        choiceFunc(1,1);
+        memberMenu();
     }
+    // Completed session list
+    std::cout << "\nCompleted Session List: \n\n";
+    currentMember->showCompletedSession();
+    std::cout << "\n" << currentMember->ownedSkill->completedSkillList.size()+1 << ". Back to member menu\n";
+    int choice = choiceFunc(1, currentMember->ownedSkill->completedSkillList.size() + 1);
+    if (choice == currentMember->ownedSkill->completedSkillList.size() + 1) {
+        memberMenu();
+    } else {
+        // View the supporter who completed the request
+        hostRateSupporterMenu(choice - 1);
+    }
+}
+
+void System::hostRateSupporterMenu(int supporter) {
+    currentMember->ownedSkill->completedSkillList[supporter]->supportedByMember->showMemInfo();
+    std::cout << "-->\t1. Rate this member\n" << "-->\t2. Back to completed session list\n";
+    switch (choiceFunc(1,2)) {
+        case 1:
+            if(memberRateSupporterAndSkill(supporter)) {
+                std::cout << "\nSuccessfully rated supporter\n";
+            } else {
+                std::cout << "\nRating failed\n";
+            }
+            completedSessionListMenu();
+            break;
+        case 2:
+            // Back to the menu
+            completedSessionListMenu();
+            break;
+    }
+}
 
     //Save data to files when exiting the program;
 void System::systemExit() {

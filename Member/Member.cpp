@@ -261,7 +261,7 @@ bool Member::minusCreditPoints(int points) {
     return true;
 }
 
-bool Member::completeRequest(int completedSkillID) {
+bool Member::completeRequest(int completedSkillID, bool isSupporter) {
     // Check completedSkillID is valid
     if (completedSkillID < 0 || completedSkillID >= memberRentList.size()) {
         std::cerr << "Invalid skill ID\n";
@@ -273,6 +273,17 @@ bool Member::completeRequest(int completedSkillID) {
     auto completedSkillTo = completedSkill->rentTo;
     auto completedRentSkill = completedSkill->rentSkill;
 
+
+    SkillRent *completedSession;
+    if (isSupporter) {
+        // Use the constructor for supportedByMember
+        completedSession = new SkillRent(completedSkillFrom, completedSkillTo, this, true);
+    } else {
+        // Use the constructor for rentedByMember
+        completedSession = new SkillRent(completedSkillFrom, completedSkillTo, this);
+    }
+
+    completedRentSkill->addCompletedSession(completedSession);
     removeHost(completedSkill);
 
     return true;
@@ -283,11 +294,15 @@ bool Member::removeHost(MemberRent *completedRequest) {
     return true;
 }
 
-bool Member::rateSkill(Skill *ratedSkill, int skillRating, int supporterRating, std::string comment) {
-    // Check if the ratedSkill is valid
-    if (ratedSkill == nullptr || ratedSkill->skillOwner == nullptr) {
+bool Member::rateSupporterAndSkill(int reviewingHostID, int skillRating, int supporterRating, std::string comment) {
+    // Check the boundary
+    if (reviewingHostID >= ownedSkill->completedSkillList.size()) {
         return false;
     }
+
+    auto ratedSkill = ownedSkill->completedSkillList[reviewingHostID];
+
+    auto ratedHost = ratedSkill->rentedByMember;
 
     if (skillRating < 1 || skillRating > 5 || supporterRating < 1 || supporterRating > 5) {
         return false; //Invalid rating score
@@ -296,7 +311,7 @@ bool Member::rateSkill(Skill *ratedSkill, int skillRating, int supporterRating, 
     RatingScores scores(skillRating, supporterRating, 0);
 
     auto newRating = new Rating(scores, std::move(comment), this);
-    ratedSkill->addRatingToSkill(newRating);
+    ratedHost->addRatingToMemberRentList(newRating);
 
     return true;
 }
@@ -408,6 +423,27 @@ bool Member::blockMember(Member* memberToBlock, bool blockView, bool blockReques
 
 void Member::setPassword(const std::string& newPassword) {
     password = newPassword;
+}
+
+// View the completed session
+bool Member::showCompletedSession() {
+    if (ownedSkill->completedSkillList.empty()) {
+        std::cout << "There aren't any completed sessions\n\n";
+        return false;
+    }
+
+    std::cout << "The list of completed sessions:\n\n";
+    int i = 1;
+    for (auto &completedSession : ownedSkill->completedSkillList) {
+        auto from = completedSession->rentFrom;
+        auto to = completedSession->rentTo;
+        auto host = completedSession->rentedByMember;
+
+        std::cout << "-->\t" << i << ". " << from->toString() << " - " << to->toString() << ": " << host->get_name() << "\n";
+        i++;
+    }
+
+    return true;
 }
 
 bool Member::isMemberBlocked(Member* member) {

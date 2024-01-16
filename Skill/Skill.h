@@ -6,7 +6,6 @@
 #include <optional>
 const std::string CITY_NAME_LIST[] = {"Hanoi", "Saigon"};
 class DateTime;
-class Rating;
 class SkillRent;
 class Member;
 class Request;
@@ -22,12 +21,11 @@ class Skill {
     int creditCostPerHour;
     std::optional<double> minHostRating;
 
-    std::vector<Rating*> skillRatingList;
-
     std::vector<Request*> skillRequestList;
 
     std::vector<SkillRent*> skillRentList;
 
+    std::vector<SkillRent*> completedSkillList;
 public:
     Skill(int skillID, std::vector<std::string> skillList, int cityID);
 
@@ -39,7 +37,7 @@ public:
 
     bool removeRequestFromSkillRequestList(Request *request);
 
-    bool addRatingToSkill(Rating *skillRating);
+    bool addCompletedSession(SkillRent *host);
 
     ~Skill();
 
