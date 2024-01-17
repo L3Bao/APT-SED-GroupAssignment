@@ -13,11 +13,13 @@
 #include "../Rating/Rating.h"
 #include "../SkillRent/Skillrent.h"
 #include "../Middleware/Middleware.h"
+#include "../Member/BlockedMember.h"
 #include "Saver.h"
 
 OutputData::OutputData() {
     this->outputStorageSkillList.clear();
     this->outputStorageMemberList.clear();
+    this->outputStorageBlockedMemberList.clear();
 }
 
 void OutputData::outputStorageLoadMemberListFromSystem(System *system) {
@@ -32,7 +34,11 @@ void OutputData::outputStorageLoadSkillListFromSystem(System *system) {
     }
 }
 
-
+void OutputData::outputStorageBlockedMemberListFromSystem(System *system) {
+    for (auto &blockedMember: system->systemBlockedMemberList) {
+        outputStorageBlockedMemberList.push_back(blockedMember);
+    }
+}
 
 // Output data to Storage/Member.csv
 void OutputData::outputMemberListToFile() {
@@ -43,8 +49,16 @@ void OutputData::outputMemberListToFile() {
         return;
     }
 
+
+    bool isFirstMember = true;
     // Print to file following the structure in StorageStructure folder
     for (auto &member: outputStorageMemberList) {
+        if (!isFirstMember) {
+            os << "\n";
+        } else {
+            isFirstMember = false;
+        }
+
         os << member->memberID << ","
            << member->username << ","
            << member->password << ","
@@ -268,6 +282,9 @@ void OutputData::updatePasswordtoFile(std::vector<Member*> memberList) {
 
     for (auto it = memberList.begin(); it != memberList.end(); ++it) {
         Member* member = *it;
+        if (it != memberList.begin()) {
+            os << "\n";
+        }
         os << member->memberID << ","
            << member->username << ","
            << member->password << "," 
@@ -277,10 +294,30 @@ void OutputData::updatePasswordtoFile(std::vector<Member*> memberList) {
            << member->email << ","
            << member->address << ","
            << member->creditPoints;
+    }
 
-        if (std::next(it) != memberList.end()) {
+    os.close();
+}
+
+void OutputData::outputBlockedMemberToFile() {
+    std::ofstream os(MEMBER_BLOCK_LIST_PATH);
+
+    if (!os) {
+        std::cerr << "Cannot open " << MEMBER_BLOCK_LIST_PATH << " for output\n";
+        return;
+    }
+
+    bool isFirstMember = true;
+    for (auto &blockedMember : outputStorageBlockedMemberList) {
+        if (!isFirstMember) {
             os << "\n";
+        } else {
+            isFirstMember = false;
         }
+        os << blockedMember->getBlockerID() << ","
+           << blockedMember->getBlockedID() << ","
+           << blockedMember->isBlockView() << ","
+           << blockedMember->isBlockRequestSupport() << "\n";
     }
 
     os.close();
@@ -302,6 +339,7 @@ void OutputData::outputStorageToFileList() {
     outputMemberRatingSkillAndSupporterToFile();
     outputMemberRatingHostToFile();
     outputCompletedSessionListToFile();
+    outputBlockedMemberToFile();
 }
 
 

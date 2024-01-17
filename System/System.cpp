@@ -2,6 +2,7 @@
 #include "../DateTime/DateTime.h"
 #include "../Skill/Skill.h"
 #include "../Member/Member.h"
+#include "../Member/BlockedMember.h"
 #include "../Admin/Admin.h"
 #include "../SkillRent/SkillRent.h"
 #include "../MemberRent/MemberRent.h"
@@ -56,6 +57,11 @@ void System::addSkill(Skill *skill) {
 //Add new admin
 void System::addAdmin(Admin *admin) {
     systemAdminList.push_back(admin);
+}
+
+//Add new entry in blocked member list
+void System::addBlockedMember(BlockedMember *blockedMember) {
+    systemBlockedMemberList.push_back(blockedMember);
 }
 
 //Function to show suitable supporter list
@@ -346,9 +352,21 @@ bool System::blockMemberInteraction(Member* requestingMember) {
     bool success = requestingMember->blockMember(targetMember, blockView, blockRequestSupport);
     if (success) {
         std::cout << "Block settings updated successfully.\n";
+         auto *newBlock = new BlockedMember(requestingMember->memberID, targetMember->memberID, blockView, blockRequestSupport);
+        addBlockedMember(newBlock);
     } else {
         std::cerr << "Failed to update block settings.\n";
     }
+
+    std::cout << "\n1. Return to member Menu\n2. Block another member\n";
+    int choice = choiceFunc(1, 2);
+
+    if (choice == 1) {
+        memberMenu();
+    } else {
+        return blockMemberInteraction(currentMember); // Recursively call the function to block another member
+    }
+
     return success;
 }
 
@@ -502,20 +520,36 @@ void System::adminMenu() {
 }
 
 void System::displayMemberList() {
-    std::cout << "List of members:\n";
-    for (size_t i = 0; i < systemMemberList.size(); ++i) {
-        std::cout << i + 1 << ". " << systemMemberList[i]->username << '\n';
+    int index = 1;
+    for (auto &member : systemMemberList) {
+        if (member != currentMember) {  // Skip the current member
+            std::cout << index << ". " << member->username << "\n";
+            index++;
+        }
     }
-    std::cout << systemMemberList.size() + 1 << ". Back to main menu\n";
+    std::cout << index << ". Back to main menu\n";
 }
+
 
 Member* System::chooseMember() {
     displayMemberList();
-    int choice = choiceFunc(1, systemMemberList.size()+ 1);
-    if (choice == systemMemberList.size() + 1) {
-        return nullptr; // Indicates the admin chose to go back
+    int choice = choiceFunc(1, systemMemberList.size()); // Adjusted the size
+
+    if (choice == systemMemberList.size()) {
+        return nullptr; // Indicates the user chose to go back
     }
-    return systemMemberList[choice - 1];
+
+    // Correctly map the choice to the member in the list, accounting for the skipped current member
+    int actualIndex = 0;
+    for (auto &member : systemMemberList) {
+        if (member != currentMember) {
+            actualIndex++;
+            if (actualIndex == choice) {
+                return member;
+            }
+        }
+    }
+    return nullptr;
 }
 
 // Feature 3: An admin can login with predefined username and password, and can reset password for any member.
@@ -803,14 +837,15 @@ bool System::memberEnterSkillInfo() {
     std::string skillName;
     int cityID;
     
-    //Enter skill info
     std::cout << "Enter the skill information: \n";
-    while(true) {
+    while (true) {
         std::cout << " - Enter a skill (type 'done' to finish): ";
         std::getline(std::cin, skillName);
 
-        if(skillName == "done") {
-            if(skillList.empty()) {
+        if (skillName.empty()) {
+            std::cout << "Skill name cannot be empty. Please enter a skill.\n";
+        } else if (skillName == "done") {
+            if (skillList.empty()) {
                 std::cout << "Please enter at least one skill.\n";
             } else {
                 break;
@@ -825,12 +860,13 @@ bool System::memberEnterSkillInfo() {
               << "--> 2.\tSaigon\n";
     cityID = choiceFunc(1, 2) - 1;
     auto *newSkill = new Skill(systemSkillList.size() + 1, skillList, cityID);
-    //Add the skill into the skill list
+    // Add the skill into the skill list
     addSkill(newSkill);
-    //Set owned skill to the newly added skill
+    // Set owned skill to the newly added skill
     currentMember->setNewSkill(newSkill);
     return true;
 }
+
 
 //Feature 5: A member can list himself/herself available to be booked (including skills can be performed, consuming points per hour, with/without minimum required host-rating score), and unlist if wanted.
 bool System::memberListSkill() {

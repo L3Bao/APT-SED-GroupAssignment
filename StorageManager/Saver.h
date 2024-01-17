@@ -3,20 +3,21 @@
 
 #include <vector>
 #include <utility>
-#include "../Skill/Skill.h"
-#include "../Member/Member.h"
 
 
 class Member;
 class Skill;
 class System;
+class BlockedMember;
 
 class OutputData {
     std::vector<Member*> outputStorageMemberList;
     std::vector<Skill*> outputStorageSkillList;
+    std::vector<BlockedMember*> outputStorageBlockedMemberList;
 
     void outputStorageLoadMemberListFromSystem(System *system);
     void outputStorageLoadSkillListFromSystem(System *system);
+    void outputStorageBlockedMemberListFromSystem(System *system);
 
     //All output to file function
     void outputMemberListToFile();
@@ -29,6 +30,7 @@ class OutputData {
 
     void outputMemberRatingHostToFile();
     void outputCompletedSessionListToFile();
+    void outputBlockedMemberToFile();
     
 
 public:

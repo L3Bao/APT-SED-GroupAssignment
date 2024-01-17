@@ -8,8 +8,6 @@
 #include <string>
 #include <ctype.h>
 #include "../Validation/Validation.h"
-/* #include "Middleware\StorageManager\Loader.h"
-#include "Middleware\StorageManager\Saver.h" */
 
 
 class Skill;
@@ -18,6 +16,7 @@ class Admin;
 class DateTime;
 class OutputData;
 class Validation;
+class BlockedMember;
 
 class System {
 
@@ -28,6 +27,7 @@ public:
     std::vector<Member*> memberSuitableSkillList;
     std::vector<Skill*> suitableSkillsList;
     std::vector<Admin*> systemAdminList;
+    std::vector<BlockedMember*> systemBlockedMemberList;
     Member* currentMember;
     Validation validate;
 
@@ -42,6 +42,8 @@ public:
     void addSkill(Skill *Skill);
 
     void addAdmin(Admin *admin);
+
+    void addBlockedMember(BlockedMember *blockedMember);
 
     bool memberLogin();
 

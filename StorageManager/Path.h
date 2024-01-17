@@ -18,3 +18,4 @@ const std::string MEMBER_RATING_RENTER_PATH = "./Storage/MemberRatingHost.csv"; 
 const std::string COMPLETED_SESSION_LIST_PATH = "./Storage/CompletedSessionList.csv";
 const std::string MEMBER_LIST_SKILL_PATH = "./Storage/MemberListSkill.csv";
 const std::string MEMBER_OWN_SKILL_PATH = "./Storage/MemberOwnSkill.csv";
+const std::string MEMBER_BLOCK_LIST_PATH = "./Storage/MemberBlockList.csv";
