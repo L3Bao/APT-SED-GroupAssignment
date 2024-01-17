@@ -56,7 +56,7 @@ void Skill::addSkillRent(SkillRent* skillRent) {
     }
 }
 
-std::string Skill::getSkillInfo() {
+std::string Skill::getSkillInfo() const {
     std::stringstream ss;
     ss << "Skill List: ";
     for (size_t i = 0; i < skillList.size(); ++i) {
@@ -69,7 +69,7 @@ std::string Skill::getSkillInfo() {
     return ss.str();
 }
 
-std::string Skill::getCityName() {
+std::string Skill::getCityName() const {
     return CITY_NAME_LIST[cityID];
 }
 

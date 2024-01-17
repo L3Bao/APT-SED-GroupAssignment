@@ -21,8 +21,7 @@ InputData::InputData() {
     inputStorageSkillList.clear();
 }
 
-void InputData::
-(System *system) {
+void InputData::inputStorageLoadSkillListToSystem(System *system) {
     // Push the Skill object to the system's Skill list
     for (auto &skill: inputStorageSkillList) {
         system->systemSkillList.push_back(skill.second);

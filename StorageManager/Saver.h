@@ -25,10 +25,10 @@ class OutputData {
     void outputMemberListSkillToFile();
     void outputMemberRequestSkillToFile();
     void outputMemberRentSkillToFile();
-    void outputMemberRatingSkillToFile();
+    void outputMemberRatingSkillAndSupporterToFile();
 
-    void outputMemberRatingRenterToFile();
-    void outputSkillUnratedRenterToFile();
+    void outputMemberRatingHostToFile();
+    void outputCompletedSessionListToFile();
 
 public:
     OutputData();

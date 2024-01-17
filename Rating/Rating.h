@@ -28,6 +28,9 @@ public:
     friend class System;
     friend class Member;
     friend class Skill;
+    
+    friend class InputData;
+    friend class OutputData;
 };
 
 #endif

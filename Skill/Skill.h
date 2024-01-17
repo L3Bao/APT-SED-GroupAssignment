@@ -49,6 +49,9 @@ public:
 
     friend class Member;
     friend class System;
+
+    friend class InputData;
+    friend class OutputData;
 };
 
 #endif //SKILL_H

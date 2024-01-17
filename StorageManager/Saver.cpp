@@ -3,16 +3,16 @@
 #include <vector>
 
 #include "Path.h"
-#include "System\System.h"
-#include "Admin\Admin.h"
-#include "Member\Member.h"
-#include "Skill\Skill.h"
-#include "MemberRent\MemberRent.h"
-#include "DateTime\DateTime.h"
-#include "Request\Request.cpp"
-#include "Rating\Rating.h"
-#include "SkillRent\Skillrent.h"
-#include "Middleware\Middleware.h"
+#include "../System/System.h"
+#include "../Admin/Admin.h"
+#include "../Member/Member.h"
+#include "../Skill/Skill.h"
+#include "../MemberRent/MemberRent.h"
+#include "../DateTime/DateTime.h"
+#include "../Request/Request.h"
+#include "../Rating/Rating.h"
+#include "../SkillRent/Skillrent.h"
+#include "../Middleware/Middleware.h"
 #include "Saver.h"
 
 OutputData::OutputData() {
@@ -193,7 +193,7 @@ void OutputData::outputMemberRentSkillToFile() {
 
 
 // Output member skill ratings to Storage/MemberRatingSkill.csv
-void OutputData::outputMemberRatingSkillToFile() {
+void OutputData::outputMemberRatingSkillAndSupporterToFile() {
     std::ofstream os {MEMBER_RATING_SKILL_PATH};  // Adjust the file path as needed
 
     if (!os.is_open()) {
@@ -205,9 +205,10 @@ void OutputData::outputMemberRatingSkillToFile() {
         for (auto &rating: member->memberRatingList) {
             // Assuming that getSkillRating() returns the skill rating and reviewedByMember points to the member who made the rating
             os << rating->scores.getSkillRating() << ","
+               << rating->scores.getSupporterRating() << ","
                << rating->comment << ","
-               << rating->reviewedByMember->getMemberID() << ","  // ID of the member who wrote the review
-               << member->getMemberID() << "\n";  // ID of the member whose skill was rated
+               << rating->reviewedByMember->memberID << ","  // ID of the member who wrote the review
+               << member->memberID << "\n";  // ID of the member whose skill was rated
         }
     }
 
@@ -215,20 +216,20 @@ void OutputData::outputMemberRatingSkillToFile() {
 }
 
 
-//Output MotorbikeOwner review Renter to data file /Storage/MemberReviewRenter.csv
-void OutputData::outputMemberReviewRenterToFile()
+//Output skillOwner review Renter to data file /Storage/MemberReviewRenter.csv
+void OutputData::outputMemberRatingHostToFile()
 {
-    std::ofstream os {MEMBER_REVIEW_RENTER_PATH};
+    std::ofstream os {MEMBER_RATING_RENTER_PATH};
 
     if (!os.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_REVIEW_RENTER_PATH << " for output\n";
+        std::cerr << "Cannot open " << MEMBER_RATING_RENTER_PATH << " for output\n";
         return;
     }
 
     for (auto &member: outputStorageMemberList) {
-        for (auto &memberReview: member->memberReviewList) {
+        for (auto &memberReview: member->memberRatingList) {
             std::stringstream ss;
-            ss << memberReview->ratingScore << "," //score rating
+            ss << memberReview->scores.getHostRating() << "," //score rating
                << memberReview->comment << ","     //comment
                << memberReview->reviewedByMember->memberID << "," //memberID
                << member->memberID << "\n";          //renterID
@@ -240,17 +241,17 @@ void OutputData::outputMemberReviewRenterToFile()
     os.close();
 }
 
-//Output renter id and motorbike info that unrated the motorbike after rent. /Storage/MotorbikeUnratedRenter.csv
-void OutputData::outputMotorbikeUnratedRenterToFile()
+//Output renter id and skill info that unrated the skill after rent. /Storage/CompletedSessionList.csv
+void OutputData::outputCompletedSessionListToFile()
 {
-    std::ofstream os {MOTORBIKE_UNRATED_RENTER_PATH};
+    std::ofstream os {COMPLETED_SESSION_LIST_PATH};
 
-    for (auto &motorbike: outputStorageMotorbikeList) {
-        for (auto &unratedRenter: motorbike->unratedRenterList) {
-            os << unratedRenter->rentFromDate->toStr() << "," //scorerating
-            << unratedRenter->rentToDate->toStr() << ","     //comment
-            << motorbike->motorbikeID << ","           //motorbikeID
-            << unratedRenter->rentedByMember->memberID <<"\n"; //renterID
+    for (auto &skill: outputStorageSkillList) {
+        for (auto &completedSession: skill->completedSkillList) {
+            os << completedSession->rentFrom->toString() << "," //scorerating
+            << completedSession->rentTo->toString() << ","     //comment
+            << skill->skillID << ","           //skillID
+            << completedSession->rentedByMember->memberID <<"\n"; //renterID
         }
     }
 
@@ -259,20 +260,20 @@ void OutputData::outputMotorbikeUnratedRenterToFile()
 
 void OutputData::outputStorageLoadDataFromSystem(System *system) {
     outputStorageLoadMemberListFromSystem(system);
-    outputStorageLoadMotorbikeListFromSystem(system);
+    outputStorageLoadSkillListFromSystem(system);
 }
 
 
 void OutputData::outputStorageToFileList() {
     outputMemberListToFile();
-    outputMotorbikeListToFile();
-    outputMemberOwnMotorbikeToFile();
-    outputMemberListMotorbikeToFile();
-    outputMemberRequestMotorbikeToFile();
-    outputMemberRentMotorbikeToFile();
-    outputMemberReviewMotorbikeToFile();
-    outputMemberReviewRenterToFile();
-    outputMotorbikeUnratedRenterToFile();
+    outputSkillListToFile();
+    outputMemberOwnSkillToFile();
+    outputMemberListSkillToFile();
+    outputMemberRequestSkillToFile();
+    outputMemberRentSkillToFile();
+    outputMemberRatingSkillAndSupporterToFile();
+    outputMemberRatingHostToFile();
+    outputCompletedSessionListToFile();
 }
 
 

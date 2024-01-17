@@ -10,7 +10,7 @@
 #include "../Validation/Validation.h"
 #include "../Middleware/Middleware.h"
 #include "../StorageManager/Loader.h"
-// #include "..\StorageManager\Saver.h"
+#include "../StorageManager/Saver.h"
 #include <string>
 #include <iostream>
 #include <chrono>
@@ -1153,9 +1153,9 @@ void System::hostRateSupporterMenu(int supporter) {
 
     //Save data to files when exiting the program;
 void System::systemExit() {
-    /* auto *outputStorageManager = new Loader();
+    auto *outputStorageManager = new OutputData();
     outputStorageManager->outputStorageLoadDataFromSystem(this);
-    outputStorageManager->outputStorageToFileList(); */
+    outputStorageManager->outputStorageToFileList();
     std::exit;
 }
 

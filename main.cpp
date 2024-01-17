@@ -14,6 +14,8 @@
 #include "SkillRent\SkillRent.h"
 #include "System\System.h"
 #include "User\User.h"
+#include "StorageManager\Loader.h"
+#include "StorageManager\Saver.h"
 using std::cout;
 
 class User;
@@ -35,7 +37,11 @@ int main() {
         << "3.\ts3974929, Truong Phung Tan Tai\n"
         << "4.\ts3822040, Tran Phu Van\n";
 
+    InputData inputStorageManager;
     System system;
+
+    inputStorageManager.inputStorageFromFileList();
+    inputStorageManager.inputStorageLoadDataToSystem(&system);
 
     system.mainMenu();
     return 0;
