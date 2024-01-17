@@ -3,6 +3,7 @@
 #define MIDDLEWARE_H
 
 #include <iostream>
+#include <optional>
 #include "../DateTime/DateTime.h"
 
 int convertStringToInt(std::string &str);
