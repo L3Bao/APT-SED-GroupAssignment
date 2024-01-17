@@ -1,43 +1,44 @@
-#ifndef InputData_H
-#define InputData_H
+#ifndef SAVER_H
+#define SAVER_H
 
-#include <map>
-#include <utility>
 #include <vector>
+#include <utility>
+#include "../Skill/Skill.h"
+#include "../Member/Member.h"
+
 
 class Member;
 class Skill;
 class System;
-class Admin;
 
-class InputData {
-    std::map<int, Member*> inputStorageMemberList;
-    std::map<int, Skill*> inputStorageSKILLList;
-    std::vector<Admin*> inputStorageAdminList;
+class OutputData {
+    std::vector<Member*> outputStorageMemberList;
+    std::vector<Skill*> outputStorageSkillList;
 
-    void inputStorageLoadSKILLListToSystem(System *system);
-    void inputStorageLoadMemberListToSystem(System *system);
-    void inputStorageLoadAdminListToSystem(System *system);
+    void outputStorageLoadMemberListFromSystem(System *system);
+    void outputStorageLoadSkillListFromSystem(System *system);
 
-    void inputMemberListFromFile();
-    void inputSKILLListFromFile();
-    void inputAdminListFromFile();
+    //All output to file function
+    void outputMemberListToFile();
+    void outputSkillListToFile();
+    void outputMemberOwnSkillToFile();
+    void outputMemberListSkillToFile();
+    void outputMemberRequestSkillToFile();
+    void outputMemberRentSkillToFile();
+    void outputMemberRatingSkillToFile();
 
-    void inputMemberOwnSKILLFromFile();
-    void inputMemberListSKILLFromFile();
-    void inputMemberRequestSKILLFromFile();
-    void inputMemberRentSKILLFromFile();
-    void inputMemberReviewSKILLFromFile();
-    void inputMemberReviewRenterFromFile();
-    void inputSKILLUnratedRenterFromFile();
+    void outputMemberRatingRenterToFile();
+    void outputSkillUnratedRenterToFile();
 
 public:
-    InputData();
+    OutputData();
 
-    void inputStorageFromFileList();
+    void outputStorageToFileList();
 
-    void inputStorageLoadDataToSystem(System *system);
+    void outputStorageLoadDataFromSystem(System *system);
 };
 
 
-#endif //TEST_InputData_H
+
+
+#endif //TEST_OutputData_H
