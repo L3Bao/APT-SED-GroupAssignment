@@ -21,6 +21,12 @@ Skill::Skill(int skillID, std::vector<std::string> skillList, int cityID) {
     this->minHostRating = std::nullopt;
 }
 
+void Skill::addSkillRent(SkillRent* skillRent) {
+    if (skillRent != nullptr) {
+        skillRentList.push_back(skillRent);
+    }
+}
+
 std::string Skill::getSkillInfo() {
     std::stringstream ss;
     ss << "Skill List: ";
