@@ -54,15 +54,15 @@ bool Skill::removeRequestFromSkillRequestList(Request *request) {
     return true;
 }
 
-bool Skill::addCompletedSession(SkillRent* host) {
-    if (host == nullptr) {
+bool Skill::addCompletedSession(SkillRent* rentSession) {
+    if (rentSession == nullptr) {
         // Guard against null pointers to ensure robustness
         std::cerr << "Cannot add a null session to completed sessions.\n";
         return false;
     }
 
     // Add the session to the completed sessions list
-    completedSkillList.push_back(host);
+    completedSkillList.push_back(rentSession);
     return true;
 }
 

@@ -39,7 +39,7 @@ public:
 
     bool removeRequestFromSkillRequestList(Request *request);
 
-    bool addCompletedSession(SkillRent *host);
+    bool addCompletedSession(SkillRent *rentSession);
 
     ~Skill();
 

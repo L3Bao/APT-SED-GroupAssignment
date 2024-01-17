@@ -437,8 +437,9 @@ bool Member::showCompletedSession() {
         auto from = completedSession->rentFrom;
         auto to = completedSession->rentTo;
         auto host = completedSession->rentedByMember;
+        auto supporter = completedSession->supportedByMember;
 
-        std::cout << "-->\t" << i << ". " << from->toString() << " - " << to->toString() << ": " << host->get_name() << "\n";
+        std::cout << "-->\t" << i << ". " << from->toString() << " - " << to->toString() << ", Rented by: " << host->get_name() << ", Supported by: " << supporter->get_name() << "\n";
         i++;
     }
 
