@@ -716,6 +716,7 @@ void System::viewMemberInformation() {
     }
 
     selectedMember->showMemInfo();
+    return;
 }
 
     //list menu (feature 5)
