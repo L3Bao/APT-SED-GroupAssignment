@@ -15,476 +15,264 @@
 #include "Middleware\Middleware.h"
 #include "Saver.h"
 
-
-InputData::InputData() {
-    // Clear all data from two lists
-    inputStorageMemberList.clear();
-    inputStorageSKILLList.clear();
+OutputData::OutputData() {
+    this->outputStorageSkillList.clear();
+    this->outputStorageMemberList.clear();
 }
 
-void InputData::inputStorageLoadSKILLListToSystem(System *system) {
-    // Push the Skill object to the system's Skill list
-    for (auto &Skill: inputStorageSKILLList) {
-        system->systemSkillList.push_back(Skill.second);
+void OutputData::outputStorageLoadMemberListFromSystem(System *system) {
+    for (auto &member: system->systemMemberList) {
+        outputStorageMemberList.push_back(member);
     }
 }
 
-void InputData::inputStorageLoadMemberListToSystem(System *system) {
-    system->systemMemberList.clear();
-
-    // Add member to the system's member list
-    for (auto &member: inputStorageMemberList) {
-        system->addMember(member.second);
+void OutputData::outputStorageLoadSkillListFromSystem(System *system) {
+    for (auto &skill: system->systemSkillList) {
+        outputStorageSkillList.push_back(skill);
     }
 }
 
-void InputData::inputStorageLoadAdminListToSystem(System *system) {
-    system->systemAdminList.clear();
 
-    // Add admin to the system's admin list
-    for (auto &admin: inputStorageAdminList) {
-        system->addAdmin(admin);
-    }
-}
 
-void InputData::inputMemberListFromFile() {
-    std::ifstream is {MEMBER_PATH};
+// Output data to Storage/Member.csv
+void OutputData::outputMemberListToFile() {
+    std::ofstream os{MEMBER_PATH};  // Ensure MEMBER_PATH matches your file path
 
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_PATH << " for input\n";
+    if (!os) {
+        std::cerr << "Cannot open " << MEMBER_PATH << " for output\n";
         return;
     }
 
-    // Each line of data
-    std::string line;
-
-    // Loop through every line
-    while (std::getline(is, line)) {
-
-        // ss1 for splitting comma, ss2 for storage data
-        std::stringstream ss1 {line};
-        std::string word;
-        std::vector<std::string> wordList;
-
-        if (line.empty()) {
-            return;
-        }
-
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        // Declare all variable
-        int memberID = convertStringToInt(wordList[0]);
-        std::string username = wordList[1];
-        std::string password = wordList[2];
-        std::string firstName = wordList[3];
-        std::string lastName = wordList[4];
-        std::string phoneNumber = wordList[5];
-        std::string id_type = wordList[6];
-        std::string passport_number = wordList[7];
-        std::string driver_license_number = wordList[8];
-        std::string expiry_date = wordList[9];
-        int creditPoints = convertStringToInt(wordList[10]);
-
-        // // Declare the member account
-        // auto *member = new Member(memberID, username, password, firstName, lastName, phoneNumber, id_type, passport_number, driver_license_number, expiry_date, creditPoints);
-        // inputStorageMemberList[memberID] = member; <?????>
+    // Print to file following the structure in StorageStructure folder
+    for (auto &member: outputStorageMemberList) {
+        os << member->memberID << ","
+           << member->username << ","
+           << member->password << ","
+           << member->firstName << ","
+           << member->lastName << ","
+           << member->phoneNumber << ","
+           << member->email << ","
+           << member->address << ","
+           << member->creditPoints << "\n";
     }
-} 
 
-void InputData::inputSKILLListFromFile() {
-    std::ifstream is {MEMBER_OWN_SKILL_PATH};
+    // Close the file
+    os.close();
+}
 
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_OWN_SKILL_PATH << " for input\n";
+
+void OutputData::outputSkillListToFile() {
+    std::ofstream os {SKILL_PATH};  
+
+    if (!os) {
+        std::cerr << "Cannot open " << SKILL_PATH << " for output\n";
         return;
     }
 
-    // Each line of data
-    std::string line;
-
-    // Loop through every line
-    while (std::getline(is, line)) {
-
-//        std::cout << line << "\n";
-        // ss1 for splitting comma
-        std::stringstream ss1 {line};
-        std::string word;
-        std::vector<std::string> wordList;
-
-        if (line.empty()) {
-            return;
+    for (auto &skill: outputStorageSkillList) {
+        std::string skillListStr;
+        // Use the getter method to access skillList
+        for (const auto& skillName : skill->getSkillList()) {
+            skillListStr += skillName + ";";
+        }
+        if (!skillListStr.empty()) {
+            skillListStr.pop_back();  // Remove the last semicolon
         }
 
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        // Declare all variable
-        int SkillID = convertStringToInt(wordList[0]);
-        std::string SkillModel = wordList[1];
-        std::string SkillColor = wordList[2];
-        std::string SkillEngineSize = wordList[3];
-        std::string transmissionMode = wordList[4];
-        std::string yearMade = wordList[5];
-        int cityID = convertStringToInt(wordList[6]);
-        std::string SkillDescription = wordList[7];
-
-        // Declare the member account
-        auto *Skill = new Skill(int skillID, std::vector<std::string> skillList);
-        inputStorageSKILLList[SkillID] = Skill;
+        // Use the getter method to access skillID
+        os << skill->getSkillID() << ","
+           << skillListStr << ","
+           << skill->getCityID() << "\n";  // Assuming getCityName() method provides city name
     }
+
+    os.close();
 }
 
-void InputData::inputMemberOwnSKILLFromFile() {
-    std::ifstream is {MEMBER_OWN_SKILL_PATH};
 
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_OWN_SKILL_PATH<< " for input\n";
+
+
+
+// Output member own skill to Storage/MemberOwnSkill.csv
+void OutputData::outputMemberOwnSkillToFile() {
+    std::ofstream os {MEMBER_OWN_SKILL_PATH};
+
+    if (!os) {
+        std::cerr << "Cannot open " << MEMBER_OWN_SKILL_PATH << " for output\n";
         return;
     }
 
-    // Each line of data
-    std::string line;
-
-    // Loop through every line
-    while (std::getline(is, line)) {
-
-//        std::cout << line << "\n";
-        // ss1 for splitting comma
-        std::stringstream ss1 {line};
-        std::string word;
-        std::vector<std::string> wordList;
-
-        if (line.empty()) {
-            return;
+    for (auto &member: outputStorageMemberList) {
+        // Check if member owns a skill
+        if (member->ownedSkill) {
+            os << member->memberID << ","
+               << member->ownedSkill->getSkillID() << "\n";
         }
-
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        // Declare all variable
-        int memberID = convertStringToInt(wordList[0]);
-        int SkillID = convertStringToInt(wordList[1]);
-
-        auto member = inputStorageMemberList[memberID];
-        auto skill = inputStorageSKILLList[SkillID];
-
-        member->setNewSKILL(skill);
     }
+
+    os.close();
 }
 
-void InputData::inputAdminListFromFile() {
-    std::ifstream is {ADMIN_PATH};
 
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << ADMIN_PATH << " for input\n";
+// Output data to Storage/MemberListSkill.csv
+void OutputData::outputMemberListSkillToFile() {
+    std::ofstream os {MEMBER_LIST_SKILL_PATH};
+
+    if (!os) {
+        std::cerr << "Cannot open " << MEMBER_LIST_SKILL_PATH << " for output\n";
         return;
     }
 
-    // Each line of data
-    std::string line;
+    // Loop through the list of members
+    for (auto &member: outputStorageMemberList) {
+        // Check if member owns a skill and if it is listed
+        if (member->ownedSkill && member->ownedSkill->isListed) {
+            Skill* skill = member->ownedSkill;
 
-    // Loop through every line
-    while (std::getline(is, line)) {
+            // Convert availableFrom and availableTo dates to string
+            std::string availableFromStr = skill->getAvailableFrom() ? skill->getAvailableFrom()->toString() : "";
+            std::string availableToStr = skill->getAvailableTo() ? skill->getAvailableTo()->toString() : "";
 
-//        std::cout << line << "\n";
-        // ss1 for splitting comma
-        std::stringstream ss1 {line};
-        std::string word;
-        std::vector<std::string> wordList;
-
-        if (line.empty()) {
-            return;
+            // Output the info for listing skill
+            os << availableFromStr << ","
+               << availableToStr << ","
+               << skill->getCreditCostPerHour() << ","
+               << (skill->getMinHostRating().has_value() ? std::to_string(skill->getMinHostRating().value()) : "N/A") << ","
+               << member->memberID << ","
+               << skill->getSkillID() << "\n";
         }
-
-        if (line.empty()) {
-            return;
-        }
-
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        // Declare all variable
-        std::string username = wordList[0];
-        std::string password = wordList[1];
-
-        auto *admin = new Admin(username, password);
-        inputStorageAdminList.push_back(admin);
     }
+
+    os.close();
 }
 
-void InputData::inputMemberListSKILLFromFile() {
-    std::ifstream is {MEMBER_LIST_SKILL_PATH};
 
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_OWN_SKILL_PATH << " for input\n";
+// Output member's skill request information to Storage/MemberRequestSkill.csv
+void OutputData::outputMemberRequestSkillToFile() {
+    std::ofstream os {MEMBER_REQUEST_SKILL_PATH};
+
+    if (!os) {
+        std::cerr << "Cannot open " << MEMBER_REQUEST_SKILL_PATH << " for output\n";
         return;
     }
 
-    // Each line of data
-    std::string line;
-
-    // Loop through every line
-    while (std::getline(is, line)) {
-        std::stringstream ss1 {line};
-        std::string word;
-        std::vector<std::string> wordList;
-
-        if (line.empty()) {
-            return;
+    // Loop through each member's skill request list
+    for (auto &member: outputStorageMemberList) {
+        for (auto &skillRequest: member->memberRequestList) {  // Assuming memberRequestList contains Request objects
+            if (skillRequest->requestFrom && skillRequest->requestTo) {
+                os << skillRequest->requestFrom->toString() << ","
+                   << skillRequest->requestTo->toString() << ","
+                   << member->memberID << "\n";  // Member ID who made the request
+            }
         }
-
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        DateTime *availableFromDate = convertStringToDate(wordList[0]);
-        DateTime *availableToDate = convertStringToDate(wordList[1]);
-        int consumingPointsPerDay = convertStringToInt(wordList[2]);
-        double minRenterRatingScore = convertStringToDouble(wordList[3]);
-        int ownerMemberID = convertStringToInt(wordList[4]);
-
-
-        // Get the owner and their Skill
-        auto ownerMember = inputStorageMemberList[ownerMemberID];
-
-
-        // List the Skill
-        ownerMember->listSkill(availableFromDate, availableToDate, consumingPointsPerDay, minRenterRatingScore);
     }
+
+    os.close();
+}
+// Output data for member renting skill to Storage/MemberRentSkill.csv
+void OutputData::outputMemberRentSkillToFile() {
+    std::ofstream os {MEMBER_RENT_SKILL_PATH};
+
+    if (!os.is_open()) {
+        std::cerr << "Cannot open " << MEMBER_RENT_SKILL_PATH << " for output\n";
+        return;
+    }
+
+    for (auto &member: outputStorageMemberList) {
+        for (auto &memberRent: member->memberRentList) {
+            if (memberRent->rentFrom && memberRent->rentTo && memberRent->rentSkill) {
+                os << memberRent->rentFrom->toString() << ","
+                   << memberRent->rentTo->toString() << ","
+                   << member->memberID << ","
+                   << memberRent->rentSkill->getSkillID() << "\n";  // Assuming Skill class has a getSkillID method
+            }
+        }
+    }
+
+    os.close();
 }
 
-void InputData::inputMemberRequestSKILLFromFile()
+
+// Output member skill ratings to Storage/MemberRatingSkill.csv
+void OutputData::outputMemberRatingSkillToFile() {
+    std::ofstream os {MEMBER_RATING_SKILL_PATH};  // Adjust the file path as needed
+
+    if (!os.is_open()) {
+        std::cerr << "Cannot open " << MEMBER_RATING_SKILL_PATH << " for output\n";
+        return;
+    }
+
+    for (auto &member: outputStorageMemberList) {
+        for (auto &rating: member->memberRatingList) {
+            // Assuming that getSkillRating() returns the skill rating and reviewedByMember points to the member who made the rating
+            os << rating->scores.getSkillRating() << ","
+               << rating->comment << ","
+               << rating->reviewedByMember->getMemberID() << ","  // ID of the member who wrote the review
+               << member->getMemberID() << "\n";  // ID of the member whose skill was rated
+        }
+    }
+
+    os.close();
+}
+
+
+//Output MotorbikeOwner review Renter to data file /Storage/MemberReviewRenter.csv
+void OutputData::outputMemberReviewRenterToFile()
 {
-    std::ifstream is {MEMBER_REQUEST_SKILL_PATH};
-    //check open file
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_REQUEST_SKILL_PATH << " for input\n";
+    std::ofstream os {MEMBER_REVIEW_RENTER_PATH};
+
+    if (!os.is_open()) {
+        std::cerr << "Cannot open " << MEMBER_REVIEW_RENTER_PATH << " for output\n";
         return;
     }
 
-    // Each line of data
-    std::string line;
-
-    // Loop through every line
-    while (std::getline(is, line)) {
-        std::stringstream ss1{line};
-        std::string word;
-        std::vector<std::string> wordList;
-
-        if (line.empty()) {
-            return;
+    for (auto &member: outputStorageMemberList) {
+        for (auto &memberReview: member->memberReviewList) {
+            std::stringstream ss;
+            ss << memberReview->ratingScore << "," //score rating
+               << memberReview->comment << ","     //comment
+               << memberReview->reviewedByMember->memberID << "," //memberID
+               << member->memberID << "\n";          //renterID
+            std::string line = ss.str();
+            os << line;
         }
-
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        DateTime *requestFrom = convertStringToDate(wordList[0]);
-        DateTime *requestTo = convertStringToDate(wordList[1]);
-        int memberID = convertStringToInt(wordList[2]);
-        int SkillID = convertStringToInt(wordList[3]);
-
-        //get member
-        auto member = inputStorageMemberList[memberID];
-        auto Skill = inputStorageSKILLList[SkillID];
-
-        //store data to request
-
-        auto *request = new Request(requestFrom, requestTo, member);
-        member->memberRequestList.push_back(request);
-        Skill->skillRequestList.push_back(request);
     }
+
+    os.close();
 }
 
-void InputData::inputMemberRentSKILLFromFile() {
-    std::ifstream is{MEMBER_RENT_SKILL_PATH};
-    //check open file
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_RENT_SKILL_PATH << " for input\n";
-        return;
-    }
-
-    // Each line of data
-    std::string line;
-
-    // Loop through every line
-    while (std::getline(is, line)) {
-        std::stringstream ss1{line};
-        std::string word;
-        std::vector<std::string> wordList;
-
-        if (line.empty()) {
-            return;
-        }
-
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        DateTime *rentFrom = convertStringToDate(wordList[0]);
-        DateTime *rentTo = convertStringToDate(wordList[1]);
-        int memberID = convertStringToInt(wordList[2]);
-        int SkillID = convertStringToInt(wordList[3]);
-
-        //get member and Skill
-        auto member = inputStorageMemberList[memberID];
-        auto Skill = inputStorageSKILLList[SkillID];
-
-        //store data to request
-        auto *memberRent = new MemberRent(rentFrom, rentTo, Skill);
-        member->memberRentList.push_back(memberRent);
-
-        auto *SkillRent = new SkillRent(rentFrom, rentTo, member);
-        Skill->skillRentList.push_back(SkillRent);
-    }
-}
-
-void InputData::inputMemberReviewSKILLFromFile()
+//Output renter id and motorbike info that unrated the motorbike after rent. /Storage/MotorbikeUnratedRenter.csv
+void OutputData::outputMotorbikeUnratedRenterToFile()
 {
-    std::ifstream is{MEMBER_REVIEW_SKILL_PATH};
-    //check open file
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_REVIEW_SKILL_PATH << " for input\n";
-        return;
+    std::ofstream os {MOTORBIKE_UNRATED_RENTER_PATH};
+
+    for (auto &motorbike: outputStorageMotorbikeList) {
+        for (auto &unratedRenter: motorbike->unratedRenterList) {
+            os << unratedRenter->rentFromDate->toStr() << "," //scorerating
+            << unratedRenter->rentToDate->toStr() << ","     //comment
+            << motorbike->motorbikeID << ","           //motorbikeID
+            << unratedRenter->rentedByMember->memberID <<"\n"; //renterID
+        }
     }
 
-    // Each line of data
-    std::string line;
-
-    // Loop through every line
-    while (std::getline(is, line)) {
-        std::stringstream ss1{line};
-
-        if (line.empty()) {
-            return;
-        }
-
-        std::string word;
-        std::vector<std::string> wordList;
-
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        int scoreRating = convertStringToInt(wordList[0]);
-        std::string comment = wordList[1];
-        int memberID = convertStringToInt(wordList[2]);
-        int SkillID = convertStringToInt(wordList[3]);
-
-        //get member and Skill
-        auto member = inputStorageMemberList[memberID];
-        auto Skill = inputStorageSkillList[SkillID];
-
-        auto *SkillReview = new Review(scoreRating, comment, member);
-        Skill->SkillReviewList.push_back(SkillReview);
-
-    }
-
+    os.close();
 }
 
-void InputData::inputMemberReviewRenterFromFile() {
-    std::ifstream is{MEMBER_REVIEW_RENTER_PATH};
-
-    //check open file
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_REVIEW_RENTER_PATH << " for input\n";
-        return;
-    }
-
-    // Each line of data
-    std::string line;
-
-    // Loop through every line
-    while (std::getline(is, line)) {
-        std::stringstream ss1{line};
-        std::string word;
-        std::vector<std::string> wordList;
-
-        if (line.empty()) {
-            return;
-        }
-
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        int scoreRating = convertStringToInt(wordList[0]);
-        std::string comment = wordList[1];
-        int memberID = convertStringToInt(wordList[2]);
-        int renterID = convertStringToInt(wordList[3]);
-
-        //get member and Skill
-        auto renter = inputStorageMemberList[renterID];
-        auto owner = inputStorageMemberList[memberID];
-
-        auto* reviewRenter = new Review (scoreRating, comment, owner);
-        renter->memberReviewList.push_back(reviewRenter);
-    }
+void OutputData::outputStorageLoadDataFromSystem(System *system) {
+    outputStorageLoadMemberListFromSystem(system);
+    outputStorageLoadMotorbikeListFromSystem(system);
 }
 
-void InputData::inputSKILLUnratedRenterFromFile()
-{
-    std::ifstream is {SKILL_UNRATED_RENTER_PATH };
-    //check open file
-    if (!is.is_open()) {
-        std::cerr << "Cannot open " << SKILL_UNRATED_RENTER_PATH << " for input\n";
-        return;
-    }
 
-    // Each line of data
-    std::string line;
-
-    // Loop through every line
-    while (std::getline(is, line)) {
-        std::stringstream ss1{line};
-        std::string word;
-        std::vector<std::string> wordList;
-
-        if (line.empty()) {
-            return;
-        }
-
-        while (std::getline(ss1, word, ',')) {
-            wordList.push_back(word);
-        }
-
-        DateTime *rentFrom= convertStringToDate(wordList[0]);
-        DateTime*rentTo = convertStringToDate(wordList[1]);
-
-        int SkillID = convertStringToInt(wordList[2]);
-        int renterID = convertStringToInt(wordList[3]);
-
-
-        auto member = inputStorageMemberList[renterID];
-        auto Skill = inputStorageSKILLList[SkillID];
-
-        auto *unratedRenter = new SkillRent(rentFromDate, rentToDate,member);
-        Skill->unratedRenterList.push_back(unratedRenter);
-    }
-}
-
-void InputData::inputStorageFromFileList() {
-    inputMemberListFromFile();
-    inputSKILLListFromFile();
-    inputAdminListFromFile();
-    inputMemberOwnSKILLFromFile();
-    inputMemberListSKILLFromFile();
-    inputMemberRequestSKILLFromFile();
-    inputMemberRentSkillFromFile();
-    inputMemberReviewSKILLFromFile();
-    inputMemberReviewRenterFromFile();
-    inputSkillUnratedRenterFromFile();
-}
-
-void InputData::inputStorageLoadDataToSystem(System *system) {
-    inputStorageLoadMemberListToSystem(system);
-    inputStorageLoadSKILLListToSystem(system);
-    inputStorageLoadAdminListToSystem(system);
+void OutputData::outputStorageToFileList() {
+    outputMemberListToFile();
+    outputMotorbikeListToFile();
+    outputMemberOwnMotorbikeToFile();
+    outputMemberListMotorbikeToFile();
+    outputMemberRequestMotorbikeToFile();
+    outputMemberRentMotorbikeToFile();
+    outputMemberReviewMotorbikeToFile();
+    outputMemberReviewRenterToFile();
+    outputMotorbikeUnratedRenterToFile();
 }
 
 

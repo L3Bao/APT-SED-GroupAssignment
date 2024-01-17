@@ -7,6 +7,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <vector>
 
 class Member;
 
@@ -19,6 +20,34 @@ Skill::Skill(int skillID, std::vector<std::string> skillList, int cityID) {
     this->availableTo = nullptr;
     this->creditCostPerHour = 0;
     this->minHostRating = std::nullopt;
+}
+
+std::vector<std::string> Skill::getSkillList() const{
+    return skillList;
+}
+
+int Skill::getSkillID() const{
+    return skillID;
+}
+
+int Skill::getCityID() const{
+    return cityID;
+}
+
+DateTime* Skill::getAvailableFrom() const {
+    return availableFrom;
+}
+
+DateTime* Skill::getAvailableTo() const {
+    return availableTo;
+}
+
+int Skill::getCreditCostPerHour() const {
+    return creditCostPerHour;
+}
+
+std::optional<double> Skill::getMinHostRating() const {
+    return minHostRating;
 }
 
 void Skill::addSkillRent(SkillRent* skillRent) {
@@ -44,29 +73,24 @@ std::string Skill::getCityName() {
     return CITY_NAME_LIST[cityID];
 }
 
-bool Skill::addRequestToSkillRequestList(Request *request) {
+bool Skill::addRequestToSkillRequestList(Request* request) {
     skillRequestList.push_back(request);
     return true;
 }
 
-bool Skill::removeRequestFromSkillRequestList(Request *request) {
+bool Skill::removeRequestFromSkillRequestList(Request* request) {
     skillRequestList.erase(std::find(skillRequestList.begin(), skillRequestList.end(), request));
     return true;
 }
 
 bool Skill::addCompletedSession(SkillRent* rentSession) {
     if (rentSession == nullptr) {
-        // Guard against null pointers to ensure robustness
         std::cerr << "Cannot add a null session to completed sessions.\n";
         return false;
     }
-
-    // Add the session to the completed sessions list
     completedSkillList.push_back(rentSession);
     return true;
 }
-
-
 
 Skill::~Skill() {
     for (auto request : skillRequestList) {
@@ -75,7 +99,6 @@ Skill::~Skill() {
     for (auto rent : skillRentList) {
         delete rent;
     }
-
     delete availableFrom;
     delete availableTo;
 }
