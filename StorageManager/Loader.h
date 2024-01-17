@@ -27,9 +27,9 @@ class InputData {
     void inputMemberListSkillFromFile();
     void inputMemberRequestSkillFromFile();
     void inputMemberRentSkillFromFile();
-    void inputMemberRatingSkillFromFile();
-    void inputMemberRatingRenterFromFile();
-    void inputSkillUnratedRenterFromFile();
+    void inputMemberRatingSkillAndSupporterFromFile();
+    void inputMemberRatingHostFromFile();
+    void inputCompletedSessionFromFile();
 
 public:
     InputData();

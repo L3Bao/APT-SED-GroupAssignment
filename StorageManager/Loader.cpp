@@ -355,7 +355,7 @@ void InputData::inputMemberRentSkillFromFile() {
 }
 
 
-void InputData::inputMemberRatingSkillFromFile() {
+void InputData::inputMemberRatingSkillAndSupporterFromFile() {
     std::ifstream is{MEMBER_RATING_SKILL_PATH}; // Adjust the file path accordingly
 
     if (!is.is_open()) {
@@ -378,9 +378,10 @@ void InputData::inputMemberRatingSkillFromFile() {
         }
 
         int skillRating = convertStringToInt(wordList[0]);
-        std::string comment = wordList[1];
-        int memberID = convertStringToInt(wordList[2]);
-        int skillID = convertStringToInt(wordList[3]);
+        int supporterRating = convertStringToInt(wordList[1]);
+        std::string comment = wordList[2];
+        int memberID = convertStringToInt(wordList[3]);
+        int skillID = convertStringToInt(wordList[4]);
 
         // Retrieve the member and skill objects
         auto memberIt = inputStorageMemberList.find(memberID);
@@ -391,7 +392,7 @@ void InputData::inputMemberRatingSkillFromFile() {
             Skill* skill = skillIt->second;
 
             // Create and store the rating
-            RatingScores scores(skillRating, 0, 0); // Assuming skillRating is relevant here
+            RatingScores scores(skillRating, supporterRating, 0); // Assuming skillRating is relevant here
             auto *rating = new Rating(scores, comment, member);
 
             // Add rating to both Member and Skill if needed
@@ -406,7 +407,7 @@ void InputData::inputMemberRatingSkillFromFile() {
 
 
 
-void InputData::inputMemberRatingRenterFromFile() {
+void InputData::inputMemberRatingHostFromFile() {
     std::ifstream is{MEMBER_RATING_RENTER_PATH};
 
     if (!is.is_open()) {
@@ -428,12 +429,11 @@ void InputData::inputMemberRatingRenterFromFile() {
             wordList.push_back(word);
         }
 
-        int skillRating = convertStringToInt(wordList[0]);
-        int supporterRating = convertStringToInt(wordList[1]);
-        int hostRating = convertStringToInt(wordList[2]);
-        std::string comment = wordList[3];
-        int memberID = convertStringToInt(wordList[4]);
-        int reviewerID = convertStringToInt(wordList[5]); // ID of the member who is giving the review
+
+        int hostRating = convertStringToInt(wordList[0]);
+        std::string comment = wordList[1];
+        int memberID = convertStringToInt(wordList[2]);
+        int reviewerID = convertStringToInt(wordList[3]); // ID of the member who is giving the review
 
         // Retrieve the member and the reviewer objects from storage
         auto memberIt = inputStorageMemberList.find(memberID);
@@ -444,7 +444,7 @@ void InputData::inputMemberRatingRenterFromFile() {
             Member* reviewer = reviewerIt->second;
 
             // Create and store the rating
-            RatingScores scores(skillRating, supporterRating, hostRating);
+            RatingScores scores(0, 0, hostRating);
             auto *rating = new Rating(scores, comment, reviewer);
 
             // Add rating to the member's rating list
@@ -456,12 +456,12 @@ void InputData::inputMemberRatingRenterFromFile() {
 }
 
 
-void InputData::inputSkillUnratedRenterFromFile() {
-    std::ifstream is{SKILL_UNRATED_RENTER_PATH}; // Adjust this to your actual file path
+void InputData::inputCompletedSessionFromFile() {
+    std::ifstream is{COMPLETED_SESSION_LIST_PATH}; // Adjust this to your actual file path
 
     // Check if file is open
     if (!is.is_open()) {
-        std::cerr << "Cannot open " << SKILL_UNRATED_RENTER_PATH << " for input\n";
+        std::cerr << "Cannot open " << COMPLETED_SESSION_LIST_PATH << " for input\n";
         return;
     }
 
@@ -486,18 +486,18 @@ void InputData::inputSkillUnratedRenterFromFile() {
         DateTime *rentFrom = convertStringToDateTime(wordList[0]);
         DateTime *rentTo = convertStringToDateTime(wordList[1]);
         int skillID = convertStringToInt(wordList[2]);
-        int renterID = convertStringToInt(wordList[3]);
+        int supporterID = convertStringToInt(wordList[3]);
 
         // Retrieve Member and Skill objects
-        auto renterIt = inputStorageMemberList.find(renterID);
+        auto supporterIt = inputStorageMemberList.find(supporterID);
         auto skillIt = inputStorageSkillList.find(skillID);
 
         // Check if Member and Skill exist
-        if (renterIt != inputStorageMemberList.end() && skillIt != inputStorageSkillList.end()) {
+        if (supporterIt != inputStorageMemberList.end() && skillIt != inputStorageSkillList.end()) {
             // Create a new SkillRent object for the unrated session
-            auto *unratedSkillRent = new SkillRent(rentFrom, rentTo, renterIt->second);
+            auto *completedSession = new SkillRent(rentFrom, rentTo, supporterIt->second);
             // Add this unrated session to the Skill object
-            skillIt->second->addSkillRent(unratedSkillRent); 
+            skillIt->second->addSkillRent(completedSession); 
         } else {
             std::cerr << "Invalid Member ID or Skill ID in data file: " << line << "\n";
         }
@@ -512,9 +512,9 @@ void InputData::inputStorageFromFileList() {
     inputMemberListSkillFromFile();
     inputMemberRequestSkillFromFile();
     inputMemberRentSkillFromFile();
-    inputMemberRatingSkillFromFile();
-    inputMemberRatingRenterFromFile();
-    inputSkillUnratedRenterFromFile();
+    inputMemberRatingSkillAndSupporterFromFile();
+    inputMemberRatingHostFromFile();
+    inputCompletedSessionFromFile();
 }
 
 void InputData::inputStorageLoadDataToSystem(System *system) {
