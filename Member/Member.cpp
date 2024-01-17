@@ -22,7 +22,6 @@ Member::Member(int memberID, std::string username, std::string password, std::st
     this->email = std::move(email);
     this->address = std::move(address);
     this->creditPoints = creditPoints;
-
     this->ownedSkill = nullptr;
 
     memberRatingList.clear();

@@ -3,6 +3,7 @@
 #include "Middleware.h"
 #include <ctime>
 #include <iomanip>
+#include <optional>
 
 int convertStringToInt(std::string &str) {
     int result;
@@ -19,6 +20,22 @@ double convertStringToDouble(std::string &str) {
     ss >> result;
     return result;
 }
+
+std::optional<double> convertStringToOptionalDouble(const std::string& str) {
+    if (str.empty()) {
+        return std::nullopt; // Return no value for empty strings
+    }
+
+    std::stringstream ss(str);
+    double result;
+
+    if (ss >> result) {
+        return result; // Successfully converted to double
+    } else {
+        return std::nullopt; // Conversion failed
+    }
+}
+
 
 DateTime* convertStringToDateTime(std::string str) {
     std::stringstream ss {str};

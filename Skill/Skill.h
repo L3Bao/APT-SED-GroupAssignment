@@ -28,6 +28,8 @@ class Skill {
     std::vector<SkillRent*> completedSkillList;
 public:
     Skill(int skillID, std::vector<std::string> skillList, int cityID);
+    
+    void addSkillRent(SkillRent* skillRent);
 
     std::string getSkillInfo();
 
