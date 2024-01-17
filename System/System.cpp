@@ -47,6 +47,7 @@ void System::addMember(Member *member) {
     systemMemberList.push_back(member);
 }
 
+
 //Add skill after entering skill info
 void System::addSkill(Skill *skill) {
     systemSkillList.push_back(skill);
@@ -381,7 +382,7 @@ void System::mainMenu() {
             break;
 
         case 4:
-            // systemExit();
+            systemExit();
             break;
     }
 }
@@ -422,32 +423,32 @@ void System::guestMenu() {
 // Feature 2: A non-member can view all supporters’ details (but not their reviews)
 void System::guestViewSupporterList(){
     int choice;
-    clearScreen();
-    std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
-    std::cout << "\n\t\t--> SUPPORTER LIST <-- \n"
-              << "ID    Information \n\n";
-    //Print supporter list
-    for (Member* mem: systemMemberList){
-        std::cout << std::setw(6) << std::left << std::to_string(mem->memberID) + ".";
-        std::cout << mem->guestViewSupporterInfo() << "\n";
-    }
-    std::cout << "\n" << systemMemberList.size()+1 << ". Back to guest menu";
-    choice = choiceFunc(1, systemMemberList.size()+1);
-    if (choice == systemMemberList.size()+1){
-        //Go back to guest menu
-        guestMenu();
-    } else {
-        //View supporter info
-        cout << "\nYou have chosen supporter number " << choice;
-        std::cout << "\n" << systemMemberList[choice - 1]->guestViewSupporterInfo();
-        std::cout << "\n1. Back to supporter list\n";
-        switch(choiceFunc(1, 1)){
-            case 1:
-                guestViewSupporterList();
-                break;
+    while (true) {
+        clearScreen();
+        std :: cout << "\n\n\n    *    \"TIME BANK\" APP    *\n\n\n";
+        std::cout << "\n\t\t--> SUPPORTER LIST <-- \n"
+                  << "ID    Information \n\n";
+        //Print supporter list
+        for (Member* mem: systemMemberList){
+            std::cout << std::left << std::to_string(mem->memberID) + ". ";
+            std::cout << mem->guestViewSupporterInfo() << "\n";
+        }
+        std::cout << "\n" << systemMemberList.size()+1 << ". Back to Guest Menu\n";
+        choice = choiceFunc(1, systemMemberList.size()+1);
+        if (choice == systemMemberList.size()+1){
+            // Go back to guest menu
+            guestMenu(); // Exit the loop to return to the guest menu
+        } else {
+            // View supporter info
+            cout << "\nYou have chosen supporter number " << choice;
+            std::cout << "\n" << systemMemberList[choice - 1]->viewSupporterInfoInDetail();
+            std::cout << "\n1. Back to supporter list\n";
+            choiceFunc(1, 1); // Wait for user input
+            // The loop will then start again, showing the supporter list
         }
     }
 }
+
 //end guest
 
 
@@ -536,6 +537,19 @@ bool System::adminChangePassword() {
 
     mem->setPassword(newPassword);
     std::cout << "Password for member " << mem->username  << " has been reset.\n";
+
+    OutputData outputData;
+    outputData.updatePasswordtoFile(systemMemberList);
+
+    std::cout << "\n1. Return to Admin Menu\n2. Change another password\n";
+    int choice = choiceFunc(1, 2);
+
+    if (choice == 1) {
+        adminMenu();
+    } else {
+        return adminChangePassword(); // Recursively call the function to change another password
+    } 
+
     return true;
 }
 
@@ -631,7 +645,6 @@ bool System::memberRegister() {
     } while (!validate.address(address , this));
 
     auto *newMember = new Member(systemMemberList.size() + 1, username, password, firstName, lastName, phoneNumber, email, address);
-    //Add member to member list
     addMember(newMember);
     return true;
 }
@@ -1151,13 +1164,14 @@ void System::hostRateSupporterMenu(int supporter) {
     }
 }
 
-    //Save data to files when exiting the program;
+//Save data to files when exiting the program;
 void System::systemExit() {
     auto *outputStorageManager = new OutputData();
     outputStorageManager->outputStorageLoadDataFromSystem(this);
     outputStorageManager->outputStorageToFileList();
-    std::exit;
+    std::exit(0); // Ensure proper function call
 }
+
 
 void System::memberViewRenterReviewList(int choice) {
     auto skillRequestList = currentMember->ownedSkill->skillRequestList;

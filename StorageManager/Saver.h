@@ -29,6 +29,7 @@ class OutputData {
 
     void outputMemberRatingHostToFile();
     void outputCompletedSessionListToFile();
+    
 
 public:
     OutputData();
@@ -36,6 +37,8 @@ public:
     void outputStorageToFileList();
 
     void outputStorageLoadDataFromSystem(System *system);
+
+    void updatePasswordtoFile(std::vector<Member*> memberList);
 };
 
 

@@ -390,17 +390,22 @@ std::string Member::viewHostRateSupporter() {
     return ss.str();
 }
 
-bool Member::guestViewSupporterInfo() {
-    std::cout << "The supporter's information:\n";
-    std::cout << "Username: " << username << ", ";
-    std::cout << "Full name: " << get_name() << ", ";
-    std::cout << "Phone number: " << phoneNumber << ", ";
-    std::cout << "Email: " << email << ", ";
-    std::cout << "Address: " << address << ", ";
-    std::cout << "Credit points: " << creditPoints << ", ";
-    std::cout << "Skill: " << ownedSkill->getSkillInfo() << '\n';
-    std::cout << '\n';
-    return true;
+std::string Member::guestViewSupporterInfo() {
+    std::stringstream ss;
+    ss << "Username: " << username;
+    return ss.str();
+}
+
+std::string Member::viewSupporterInfoInDetail() {
+    std::stringstream ss;
+    ss << "+ Username: " << username << "\n" << "+ Full name: " << get_name() << "\n" << "+ Phone number: " << phoneNumber << "\n" << "+ Email: " << email << "\n" << "+ Address: " << address << "\n" << "\n" << "+ Skill: "; 
+    if (ownedSkill != nullptr) {
+        ss << ownedSkill->getSkillInfo();
+    } else {
+        ss << "None";
+    }
+    ss << "\n";
+    return ss.str();
 }
 
 bool Member::blockMember(Member* memberToBlock, bool blockView, bool blockRequestSupport) {

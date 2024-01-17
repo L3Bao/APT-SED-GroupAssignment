@@ -258,6 +258,34 @@ void OutputData::outputCompletedSessionListToFile()
     os.close();
 }
 
+void OutputData::updatePasswordtoFile(std::vector<Member*> memberList) {
+    std::ofstream os(MEMBER_PATH, std::ios::trunc);
+
+    if (!os) {
+        std::cerr << "Cannot open " << MEMBER_PATH << " for output\n";
+        return;
+    }
+
+    for (auto it = memberList.begin(); it != memberList.end(); ++it) {
+        Member* member = *it;
+        os << member->memberID << ","
+           << member->username << ","
+           << member->password << "," 
+           << member->firstName << ","
+           << member->lastName << ","
+           << member->phoneNumber << ","
+           << member->email << ","
+           << member->address << ","
+           << member->creditPoints;
+
+        if (std::next(it) != memberList.end()) {
+            os << "\n";
+        }
+    }
+
+    os.close();
+}
+
 void OutputData::outputStorageLoadDataFromSystem(System *system) {
     outputStorageLoadMemberListFromSystem(system);
     outputStorageLoadSkillListFromSystem(system);
