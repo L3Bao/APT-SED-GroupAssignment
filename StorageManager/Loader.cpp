@@ -20,7 +20,6 @@ InputData::InputData() {
     // Clear all data from three lists
     inputStorageMemberList.clear();
     inputStorageSkillList.clear();
-    inputStorageBlockedMemberlist.clear();
 }
 
 void InputData::inputStorageLoadSkillListToSystem(System *system) {
@@ -47,15 +46,6 @@ void InputData::inputStorageLoadAdminListToSystem(System *system) {
         system->addAdmin(admin);
     }
 }
-
-/* void InputData::inputStorageLoadBlockedMemberListToSystem(System *system) {
-    system->systemBlockedMemberList.clear();
-
-    // Add blocked member to the system's admin list
-    for (auto &blockedMember: inputStorageBlockedMemberlist) {
-        system->addBlockedMember(blockedMember.second);
-    }
-} */
 
 void InputData::inputMemberListFromFile() {
     std::ifstream is {MEMBER_PATH};
@@ -252,6 +242,7 @@ void InputData::inputBlockedMemberListFromFile() {
 
         int blockerID = convertStringToInt(wordList[0]);
         int blockedID = convertStringToInt(wordList[1]);
+        std::cout << "Parsed Block Relationship: Blocker ID " << blockerID << ", Blocked ID " << blockedID << "\n";
         bool blockView = convertStringToBool(wordList[2]);
         bool blockRequestSupport = convertStringToBool(wordList[3]);
 
@@ -261,6 +252,14 @@ void InputData::inputBlockedMemberListFromFile() {
         if (blockerIt != inputStorageMemberList.end() && blockedIt != inputStorageMemberList.end()) {
             // Update the blocker member with the block information
             blockerIt->second->addBlockedMember(blockedIt->second, blockView, blockRequestSupport);
+        } else {
+            // Handle edge cases
+            if (blockerIt == inputStorageMemberList.end()) {
+                std::cerr << "Blocker member with ID " << blockerID << " not found.\n";
+            }
+            if (blockedIt == inputStorageMemberList.end()) {
+                std::cerr << "Blocked member with ID " << blockedID << " not found.\n";
+            }
         }
     }
 }
@@ -571,7 +570,6 @@ void InputData::inputStorageLoadDataToSystem(System *system) {
     inputStorageLoadMemberListToSystem(system);
     inputStorageLoadSkillListToSystem(system);
     inputStorageLoadAdminListToSystem(system);
-    inputStorageLoadBlockedMemberListToSystem(system);
 }
 
 

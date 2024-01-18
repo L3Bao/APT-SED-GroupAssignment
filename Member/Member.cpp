@@ -12,7 +12,7 @@
 #include "../Skill/Skill.h"
 #include "../Middleware/Middleware.h"
 #include "../Request/Request.h"
-#include "../Member/BlockedMember.h";
+#include "../Member/BlockedMember.h"
 
 //Constructor
 Member::Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName, std::string phoneNumber, std::string email, std::string address, int creditPoints) : User(std::move(username), std::move(password)) {
@@ -474,7 +474,7 @@ void Member::addBlockedMember(Member* blockedMember, bool blockView, bool blockR
 bool Member::isMemberBlocked(Member* member) {
     // Check if the member is in the blocked list
     for (const auto& block : blockedMemberList) {
-        if (block.blockedMember == member) {
+        if (block->blockedID == member->memberID) {
             return true;
         }
     }
@@ -482,8 +482,8 @@ bool Member::isMemberBlocked(Member* member) {
 }
 
 bool Member::isBlockedForViewing(Member* member) {
-    for (const auto& block : blockedMemberList) {
-        if (block.blockedMember == member && block.blockView) {
+    for (const auto& blockedMember : blockedMemberList) {
+        if (blockedMember->getBlockedID() == member->memberID && blockedMember->isBlockView()) {
             return true; // The member is blocked from viewing
         }
     }
@@ -492,7 +492,7 @@ bool Member::isBlockedForViewing(Member* member) {
 
 bool Member::isBlockedForRequesting(Member* member) {
     for (const auto& block : blockedMemberList) {
-        if (block.blockedMember == member && block.blockRequestSupport) {
+        if (block->getBlockedID() == member->memberID && block->isBlockRequestSupport()) {
             return true; // The member is blocked from requesting support
         }
     }
@@ -512,6 +512,6 @@ Member::~Member() {
         delete request;
     }
     for (auto &block : blockedMemberList) {
-        delete block.blockedMember;
+        delete block;
     }
 }

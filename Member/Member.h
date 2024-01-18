@@ -16,15 +16,6 @@ class MemberRent;
 class DateTime;
 class Member;
 class BlockedMember;
-
-struct MemberBlock {
-    Member* blockedMember;
-    bool blockView;
-    bool blockRequestSupport;
-
-    MemberBlock(Member* member, bool view, bool request) : blockedMember(member), blockView(view), blockRequestSupport(request) {}
-};
-
 class Member: public User {
     int memberID;
 
@@ -43,7 +34,7 @@ class Member: public User {
 
     std::vector<MemberRent*> memberRentList;
 
-    std::vector<MemberBlock> blockedMemberList;
+    std::vector<BlockedMember*> blockedMemberList;
 
     std::map<int, BlockedMember*> blockedMembers;
 
