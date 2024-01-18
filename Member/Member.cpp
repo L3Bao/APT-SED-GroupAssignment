@@ -25,7 +25,8 @@ Member::Member(int memberID, std::string username, std::string password, std::st
     this->creditPoints = creditPoints;
     this->ownedSkill = nullptr;
 
-    memberRatingList.clear();
+    memberRatingSupporterAndSkillList.clear();
+    memberRatingHostList.clear();
 }
 
 std::string Member::get_name() {
@@ -33,21 +34,25 @@ std::string Member::get_name() {
 }
 
 std::tuple<double, double, double> Member::getRatingScore() {
-    if (memberRatingList.empty()) {
-        return std::make_tuple(0.0, 0.0, 0.0);
+    double avgSkillRating = 0.0, avgSupporterRating = 0.0, avgHostRating = 0.0;
+
+    if (!memberRatingSupporterAndSkillList.empty()) {
+        double totalSkillRating = 0.0, totalSupporterRating = 0.0;
+        for (auto &review : memberRatingSupporterAndSkillList) {
+            totalSkillRating += review->scores.getSkillRating();
+            totalSupporterRating += review->scores.getSupporterRating();
+        }
+        avgSkillRating = totalSkillRating / memberRatingSupporterAndSkillList.size();
+        avgSupporterRating = totalSupporterRating / memberRatingSupporterAndSkillList.size();
     }
 
-    double totalSkillRating = 0.0, totalSupporterRating = 0.0, totalHostRating = 0.0;
-
-    for (auto &review : memberRatingList) {
-        totalSkillRating += review->scores.getSkillRating();
-        totalSupporterRating += review->scores.getSupporterRating();
-        totalHostRating += review->scores.getHostRating();
+    if (!memberRatingHostList.empty()) {
+        double totalHostRating = 0.0;
+        for (auto &review : memberRatingHostList) {
+            totalHostRating += review->scores.getHostRating();
+        }
+        avgHostRating = totalHostRating / memberRatingHostList.size();
     }
-
-    double avgSkillRating = totalSkillRating / memberRatingList.size();
-    double avgSupporterRating = totalSupporterRating / memberRatingList.size();
-    double avgHostRating = totalHostRating / memberRatingList.size();
 
     // Round the averages to one decimal place
     std::stringstream ss;
@@ -56,6 +61,7 @@ std::tuple<double, double, double> Member::getRatingScore() {
 
     return std::make_tuple(avgSkillRating, avgSupporterRating, avgHostRating);
 }
+
 
 
 //Feature 4: A member can login with the registered username and password, and can view all of his/her information.
@@ -217,7 +223,7 @@ bool Member::acceptRequest(int acceptedRequestID) {
     }
 
     // Create the according objects
-    auto *skillRent = new SkillRent(rentStartTime, rentEndTime, rentMember);
+    auto *skillRent = new SkillRent(rentStartTime, rentEndTime, rentMember, this);
     auto *memberRent = new MemberRent(rentStartTime, rentEndTime, ownedSkill);
 
     // Add to skillRentList
@@ -261,7 +267,7 @@ bool Member::minusCreditPoints(int points) {
     return true;
 }
 
-bool Member::completeRequest(int completedSkillID, bool isSupporter) {
+bool Member::completeRequest(int completedSkillID) {
     // Check completedSkillID is valid
     if (completedSkillID < 0 || completedSkillID >= memberRentList.size()) {
         std::cerr << "Invalid skill ID\n";
@@ -273,15 +279,9 @@ bool Member::completeRequest(int completedSkillID, bool isSupporter) {
     auto completedSkillTo = completedSkill->rentTo;
     auto completedRentSkill = completedSkill->rentSkill;
 
+    Member* renter = completedRentSkill->skillRentList[completedSkillID]->rentedByMember;
 
-    SkillRent *completedSession;
-    if (isSupporter) {
-        // Use the constructor for supportedByMember
-        completedSession = new SkillRent(completedSkillFrom, completedSkillTo, this, true);
-    } else {
-        // Use the constructor for rentedByMember
-        completedSession = new SkillRent(completedSkillFrom, completedSkillTo, this);
-    }
+    auto *completedSession = new SkillRent(completedSkillFrom, completedSkillTo, renter, this);
 
     completedRentSkill->addCompletedSession(completedSession);
     removeHost(completedSkill);
@@ -294,27 +294,30 @@ bool Member::removeHost(MemberRent *completedRequest) {
     return true;
 }
 
-bool Member::rateSupporterAndSkill(int reviewingHostID, int skillRating, int supporterRating, std::string comment) {
-    // Check the boundary
-    if (reviewingHostID >= ownedSkill->completedSkillList.size()) {
+bool Member::rateSupporterAndSkill(Member* supporter, int skillRating, int supporterRating, std::string comment) {
+    if (supporter == nullptr) {
+        std::cerr << "Invalid supporter. Cannot rate.\n";
         return false;
     }
 
-    auto ratedSkill = ownedSkill->completedSkillList[reviewingHostID];
-
-    auto ratedHost = ratedSkill->rentedByMember;
-
+    // Validate ratings
     if (skillRating < 1 || skillRating > 5 || supporterRating < 1 || supporterRating > 5) {
-        return false; //Invalid rating score
+        std::cerr << "Invalid rating score. Must be between 1 and 5.\n";
+        return false;
     }
 
-    RatingScores scores(skillRating, supporterRating, 0);
+    // Create the rating
+    RatingScores scores(skillRating, supporterRating, 0); // Host rating is not applicable here
+    auto newRating = new Rating(scores, comment, this); // 'this' refers to the host member who is giving the rating
 
-    auto newRating = new Rating(scores, std::move(comment), this);
-    ratedHost->addRatingToMemberRentList(newRating);
+    // Add the rating to the supporter's rating list
+    supporter->addToRateSupporterAndSkillList(newRating);
 
     return true;
 }
+
+
+
 
 bool Member::addToRequestList(Request *addedRequest) {
     memberRequestList.push_back(addedRequest);
@@ -336,8 +339,17 @@ bool Member::showCurrentSkillRent() {
     return true;
 }
 
-bool Member::addRatingToMemberRentList(Rating *memberRating) {
-    memberRatingList.push_back(memberRating);
+bool Member::addToRateSupporterAndSkillList(Rating* rating) {
+    if (rating == nullptr) {
+        return false;
+    }
+    
+    memberRatingSupporterAndSkillList.push_back(rating);
+    return true;
+}
+
+bool Member::addToRateHostList(Rating *memberRating) {
+    memberRatingHostList.push_back(memberRating);
     return true;
 }
 
@@ -353,18 +365,19 @@ bool Member::rateHost(Member* host, int hostRating, std::string comment) {
     RatingScores scores(0, 0, hostRating);
 
     auto newRating = new Rating(scores, std::move(comment), this);
+    host->addToRateHostList(newRating);
     return true;
 }
 
 std::string Member::viewSupporterRateHost() {
     std::stringstream ss;
-    if (memberRatingList.empty()) {
+    if (memberRatingHostList.empty()) {
         return "This host has no reviews.\n\n";
     }
 
     ss << "The reviews for this host:\n\n";
-    for (int i = 0; i < memberRatingList.size(); i++) {
-        auto rating = memberRatingList[i];
+    for (int i = 0; i < memberRatingHostList.size(); i++) {
+        auto rating = memberRatingHostList[i];
         auto comment = rating->comment;
         auto hostScore = rating->scores.getHostRating();
         auto reviewedByMember = rating->reviewedByMember;
@@ -375,13 +388,13 @@ std::string Member::viewSupporterRateHost() {
 
 std::string Member::viewHostRateSupporter() {
     std::stringstream ss;
-    if (memberRatingList.empty()) {
+    if (memberRatingSupporterAndSkillList.empty()) {
         return "This supporter has no reviews.\n\n";
     }
 
     ss << "The reviews for this supporter:\n\n";
-    for (int i = 0; i < memberRatingList.size(); i++) {
-        auto rating = memberRatingList[i];
+    for (int i = 0; i < memberRatingSupporterAndSkillList.size(); i++) {
+        auto rating = memberRatingSupporterAndSkillList[i];
         auto comment = rating->comment;
         auto skillScore = rating->scores.getSkillRating();
         auto supporterScore = rating->scores.getSupporterRating();
@@ -442,7 +455,7 @@ bool Member::showCompletedSession() {
         auto from = completedSession->rentFrom;
         auto to = completedSession->rentTo;
         auto host = completedSession->rentedByMember;
-        auto supporter = completedSession->supportedByMember;
+        auto supporter = ownedSkill->skillOwner;
 
         std::cout << "-->\t" << i << ". " << from->toString() << " - " << to->toString() << ", Rented by: " << host->get_name() << ", Supported by: " << supporter->get_name() << "\n";
         i++;
@@ -525,9 +538,14 @@ Member::~Member() {
     for (auto &rent : memberRentList) {
         delete rent;
     }
-    for (auto &rating : memberRatingList) {
-        delete rating;
+    for (auto &skillAndSupporterRating : memberRatingSupporterAndSkillList) {
+        delete skillAndSupporterRating;
     }
+
+    for (auto &hostRating : memberRatingHostList) {
+        delete hostRating;
+    }
+
     for (auto &request : memberRequestList) {
         delete request;
     }

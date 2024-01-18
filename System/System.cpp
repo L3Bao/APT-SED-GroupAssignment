@@ -69,115 +69,111 @@ bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTim
     memberSuitableSkillList.clear();
     suitableSkillsList.clear();
 
-    // If that member already send another request for this supporter and that request is overlapped with the current request
-    for (auto &request: currentMember->memberRequestList) {
 
-        // If two time frame are not overlapped
+    // Check for overlapping requests
+    for (auto &request : currentMember->memberRequestList) {
+
         if (*request->requestTo < *startTime || *endTime < *request->requestFrom) {
-            continue;
+            continue; // No overlap
         }
 
         std::cout << "\nYour request is overlapped!!!\n\n";
-        return false;
+        return false; // Overlap detected
     }
 
-    // Find the avalaible supporter
+    // Iterate over all skills in the system
     for (auto &skill : systemSkillList) {
-        // Skip the current member's skills
+        // Debugging: Log skill being checked
+        std::cout << "Checking skill ID: " << skill->skillID << "\n";
+
         if (skill->skillOwner == currentMember) {
-            continue;
+            std::cout << "Skipping current member's skill\n";
+            continue; // Skip current member's skills
         }
+
+        // Check if skill is suitable
         if (isSuitableSkill(startTime, endTime, cityID - 1, skill)) {
-            suitableSkillsList.push_back(skill); // Add the skill
-            // If you also want to keep track of the members
-            memberSuitableSkillList.push_back(skill->skillOwner); // Add the skill owner
+            std::cout << "Skill ID " << skill->skillID << " is suitable. Adding to list.\n";
+            suitableSkillsList.push_back(skill); // Add skill
+            memberSuitableSkillList.push_back(skill->skillOwner); // Add owner
+        } else {
+            std::cout << "Skill ID " << skill->skillID << " is not suitable.\n";
         }
-}
+    }
 
-
-
-    // If there is no availalble supporters
     if (memberSuitableSkillList.empty()) {
         std::cout << "\nNo supporter is suitable for you!\n";
-        return false;
+        return false; // No suitable supporters
     }
 
-    // Print the suitable supporter list for user
+    // Print suitable supporters
     std::cout << "\nThe list of suitable supporters for you:\n\n";
     for (size_t i = 0; i < suitableSkillsList.size(); ++i) {
         Skill* skill = suitableSkillsList[i];
         Member* supporter = memberSuitableSkillList[i];
-        auto [avgSkillRating, avgSupporterRating, avgHostRating] = supporter->getRatingScore();
 
+        // Debugging: Log supporter details
         std::cout << "--> " << i + 1 << ". ";
-        std::cout << "Name: " << supporter->get_name() << ", ";
-        std::cout << "Skills: " << skill->getSkillInfo() << ", ";
-        std::cout << "Credit Per Hour: " << skill->creditCostPerHour << ", ";
-        std::cout << "Available: From " << skill->availableFrom->toString() << " to " << skill->availableTo->toString() << ", ";
-        std::cout << "Skill's Rating: " << avgSkillRating << ", ";
-        std::cout << "Supporter's Rating: " << avgSupporterRating << "\n";
+        std::cout << "Supporter ID: " << supporter->memberID << ", Skill ID: " << skill->skillID << "\n";
     }
     std::cout << "\n\n";
 
-    return true;
+    return true; // Successful completion
 }
+
+
 
 //Function to check if the supporter is suitable to the member
 bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID, Skill *skill) {
-    std::cout << "Checking skill availability: " << skill->availableFrom->toString() 
-              << " to " << skill->availableTo->toString() << std::endl;
-    std::cout << "Against requested time: " << startTime->toString() 
-              << " to " << endTime->toString() << std::endl;
 
     auto [avgSkillRating, avgSupporterRating, avgHostRating] = skill->skillOwner->getRatingScore();
 
-    // If the skill is not listed
     if (!skill->isListed) {
+        std::cout << "Skill is not listed.\n";
         return false;
     }
 
-    // If the skill is owned by currentMember
     if (skill == currentMember->ownedSkill) {
+        std::cout << "Skill is owned by the current member. Skipping.\n";
         return false;
     }
 
-    // If the member do not have minimum required score
     if (avgHostRating < skill->minHostRating) {
+        std::cout << "Member does not meet the minimum required host rating.\n";
         return false;
     }
 
-    if ((*skill->availableFrom <= *startTime || *skill->availableFrom == *startTime) && 
-    (*endTime <= *skill->availableTo || *endTime == *skill->availableTo)) {
-    // Supporter is available in the requested time slot
-    } else {
-        return false; // Supporter is not available
-    }
-
-
-
-    // If the user do not have enough credit Points
-    int differenceBetweenStartAndendTime = *endTime - *startTime;
-    if (differenceBetweenStartAndendTime * skill->creditCostPerHour > currentMember->creditPoints) {
+    if (!((*skill->availableFrom <= *startTime || *skill->availableFrom == *startTime) && 
+          (*endTime <= *skill->availableTo || *endTime == *skill->availableTo))) {
+        std::cout << "Supporter is not available in the requested time slot.\n";
         return false;
     }
 
-    // If the supporter is in different city
+    // Calculate the time difference in hours (converting minutes to hours)
+    double timeDifferenceInHours = static_cast<double>(*endTime - *startTime) / 60.0;
+
+    if (timeDifferenceInHours * skill->creditCostPerHour > currentMember->creditPoints) {
+        std::cout << "User does not have enough credit points.\n";
+        return false;
+    }
+
+
     if (cityID != skill->cityID) {
+        std::cout << "Supporter is in a different city.\n";
         return false;
     }
 
-    // Loop over the rent status of the skill for checking
     for (auto &rent : skill->skillRentList) {
-        // Check if the requested time overlaps with the rented time
         if (!(endTime <= rent->rentFrom || startTime >= rent->rentTo)) {
-            // The requested time slot overlaps with a rented time slot
+            std::cout << "Requested time slot overlaps with a rented time slot.\n";
             return false;
         }
     }
 
-
+    std::cout << "Skill is suitable.\n";
     return true;
 }
+
 
 bool System::memberViewSkillReviewList(int skillID, DateTime *sD, DateTime *eD) {
     if (skillID >= suitableSkillsList.size()) {
@@ -232,21 +228,23 @@ bool System::memberViewRentList() {
 }
 
 //Function for current member to turnback the skill
-bool System::completeRequest(int completedSkillID, bool isSupporter) {
+bool System::completeRequest(int completedSkillID) {
     if (currentMember == nullptr) {
         std::cerr << "No current member set\n";
         return false;
     }
 
-    return currentMember->completeRequest(completedSkillID, isSupporter);
+    return currentMember->completeRequest(completedSkillID);
 }
 
 //Function to rate host
 bool System::memberRateHost(Member* host) {
     if (host == nullptr) {
-        std::cout << "Invalid host. Cannot rate.\n";
+        std::cerr << "Invalid host. Cannot rate.\n";
         return false;
     }
+
+    std::cout << "Rating host: " << host->get_name() << "\n";
 
     int hostRating;
     std::string comment;
@@ -260,23 +258,37 @@ bool System::memberRateHost(Member* host) {
     return currentMember->rateHost(host, hostRating, comment);
 }
 
+
 //Function to rate skill
-bool System::memberRateSupporterAndSkill(int hostID) {
+bool System::memberRateSupporterAndSkill(Member* supporter) {
+    if (supporter == nullptr) {
+        std::cerr << "Invalid supporter. Cannot rate.\n";
+        return false;
+    }
+
     int skillRating, supporterRating;
     std::string comment;
 
-    std::cout << "\n---Rate the Skill from 1 to 5---\n";
+    // Prompt for rating the skill
+    std::cout << "\n--- Rate the Skill from 1 to 5 ---\n";
     skillRating = choiceFunc(1, 5);
 
-    std::cout << "\n---Rate the Supporter from 1 to 5---\n";
+    // Prompt for rating the supporter
+    std::cout << "\n--- Rate the Supporter from 1 to 5 ---\n";
     supporterRating = choiceFunc(1, 5);
 
-    std::cout << "\nEnter a comment about this skill: ";
+    // Prompt for a comment
+    std::cout << "\nEnter a comment about this skill/supporter: ";
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(std::cin, comment);
 
-    return currentMember->rateSupporterAndSkill(hostID, skillRating, supporterRating, comment);
+    // Pass the ratings and comment to the Member's rating method
+    return currentMember->rateSupporterAndSkill(supporter, skillRating, supporterRating, comment);
 }
+
+
+
+
 
 //Function for entering choice
 int System::choiceFunc(int a, int b) {
@@ -1165,7 +1177,7 @@ void System::memberViewSkillRequestListMenu() {
 
     //view currently supported skill (complete the request)
 void System::memberViewRentedSkill() {
-    //Check if current member doesn't request a supporter
+    //Check if current member doesn't support a host
     if (currentMember->memberRentList.empty()) {
         std::cout << "\nYou haven't supported anyone yet\n\n"
                   << "1. Back to member menu\n";
@@ -1186,24 +1198,17 @@ void System::memberViewRentedSkill() {
                       << "\n-->\t1. Complete the request\n"
                       << "\n-->\t2. Back to member menu\n";
             switch (choiceFunc(1, 2)){
-                case 1:{
-                    //Leave a host review
-                    Member* host = currentMember->ownedSkill->skillRentList[choice - 1]->rentedByMember;
-                    if (!host) {
-                        std::cerr << "Error: Host not found.\n";
-                        break;
-                    }
-                    if (memberRateHost(host)) {
-                        std::cout << "Host reviewed.\n";
-                    } else {
-                        std::cout << "Failed to review host.\n";
-                    }
-
-                    //Complete the request
-                    if(currentMember->completeRequest(choice - 1, true)){
+                case 1: {
+                    // Complete the request
+                    if (currentMember->completeRequest(choice - 1)) {
                         std::cout << "\nYou have completed the request\n"
-                                  << "Thank you for your contribution\n"
-                                  << "SEE YOU AGAIN!!!\n\n";
+                                << "Thank you for your contribution\n"
+                                << "SEE YOU AGAIN!!!\n\n";
+
+                        // Rate the host
+                        Member* host = rentSkill->skillRentList[choice-1]->rentedByMember; // Retrieve the host
+                        memberRateHost(host);
+                        std::cout << "Host reviewed.\n";
                     } else {
                         std::cout << "\nProcess unsuccessful\n";
                     }
@@ -1212,53 +1217,81 @@ void System::memberViewRentedSkill() {
                     memberMenu();
                     break;
                 }
-                case 2:{
-                    //Back to member menu
+                case 2: {
+                    // Back to member menu
                     memberMenu();
                     break;
                 }
+
             }
-//                memberMenu();
         }
     }
 }    //end view currently rented skill
 
 void System::completedSessionListMenu() {
-    // Check if member has owned a set of skills
-    if (currentMember->ownedSkill == nullptr) {
-        std::cout << "\nYou haven't owned a set of skills.\n\n" << "1. Back to member menu\n";
-        choiceFunc(1,1);
-        memberMenu();
+
+    // Search through all skills for completed sessions where the current member is the host
+    for (auto &skill : systemSkillList) {
+        for (auto &session : skill->completedSkillList) {
+            // Check if the current member is the host in the session
+            if (session->rentedByMember->memberID == currentMember->memberID) {
+                completedSessionList.push_back(session);
+            }
+        }
     }
-    // Completed session list
+
+    // Check if there are relevant sessions
+    if (completedSessionList.empty()) {
+        std::cout << "\nYou have no completed sessions.\n\n";
+        std::cout << "1. Back to member menu\n";
+        choiceFunc(1, 1);
+        memberMenu();
+        return;
+    }
+
+    // Display the relevant completed sessions
     std::cout << "\nCompleted Session List: \n\n";
-    currentMember->showCompletedSession();
-    std::cout << "\n" << currentMember->ownedSkill->completedSkillList.size()+1 << ". Back to member menu\n";
-    int choice = choiceFunc(1, currentMember->ownedSkill->completedSkillList.size() + 1);
-    if (choice == currentMember->ownedSkill->completedSkillList.size() + 1) {
+    for (size_t i = 0; i < completedSessionList.size(); i++) {
+        auto session = completedSessionList[i];
+        std::cout << "--> " << i + 1 << ". " 
+                  << "From: " << session->rentFrom->toString() 
+                  << ", To: " << session->rentTo->toString()
+                  << ", Supported By: " << session->supportedByMember->get_name()
+                  << ", Hosted By: " << session->rentedByMember->get_name() << "\n";
+    }
+    std::cout << completedSessionList.size() + 1 << ". Back to member menu\n";
+
+    // Choose a session for further action
+    int choice = choiceFunc(1, completedSessionList.size() + 1);
+    if (choice == completedSessionList.size() + 1) {
         memberMenu();
     } else {
-        // View the supporter who completed the request
         hostRateSupporterMenu(choice - 1);
     }
 }
 
-void System::hostRateSupporterMenu(int supporter) {
-    currentMember->ownedSkill->completedSkillList[supporter]->supportedByMember->showMemInfo();
+
+void System::hostRateSupporterMenu(int sessionIndex) {
+    if (sessionIndex < 0 || sessionIndex >= completedSessionList.size()) {
+        std::cerr << "Invalid session index.\n";
+        completedSessionListMenu();
+        return;
+    }
+
+    auto session = completedSessionList[sessionIndex];
+    auto supporter = session->supportedByMember;
+
+    // Display supporter's information
+    supporter->showMemInfo();
+
+    // Prompt for rating
     std::cout << "-->\t1. Rate this member\n" << "-->\t2. Back to completed session list\n";
-    switch (choiceFunc(1,2)) {
-        case 1:
-            if(memberRateSupporterAndSkill(supporter)) {
-                std::cout << "\nSuccessfully rated supporter\n";
-            } else {
-                std::cout << "\nRating failed\n";
-            }
-            completedSessionListMenu();
-            break;
-        case 2:
-            // Back to the menu
-            completedSessionListMenu();
-            break;
+    int userChoice = choiceFunc(1, 2);
+    if (userChoice == 1) {
+        memberRateSupporterAndSkill(supporter);
+        memberMenu();
+    } else {
+        completedSessionListMenu();
     }
 }
 

@@ -17,6 +17,8 @@ public:
     friend class System;
 
     friend class OutputData;
+
+    friend class InputData;
 };
 
 

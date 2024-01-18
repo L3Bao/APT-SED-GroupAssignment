@@ -17,6 +17,7 @@ class DateTime;
 class OutputData;
 class Validation;
 class BlockedMember;
+class SkillRent;
 
 class System {
 
@@ -28,6 +29,7 @@ public:
     std::vector<Skill*> suitableSkillsList;
     std::vector<Admin*> systemAdminList;
     std::vector<BlockedMember*> systemBlockedMemberList;
+    std::vector<SkillRent*> completedSessionList;
     Member* currentMember;
     Validation validate;
 
@@ -57,11 +59,11 @@ public:
 
     bool memberViewRentList();
 
-    bool completeRequest(int turnbackRentSkillID, bool isSupporter);
+    bool completeRequest(int turnbackRentSkillID);
 
     bool memberRateHost(Member* host);
 
-    bool memberRateSupporterAndSkill(int hostID);
+    bool memberRateSupporterAndSkill(Member* supporter);
 
     void mainMenu();
 

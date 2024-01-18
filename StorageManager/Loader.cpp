@@ -291,6 +291,7 @@ void InputData::inputMemberListSkillFromFile() {
         int creditPointsPerHour = convertStringToInt(wordList[2]);
         std::optional<double> minHostRating = convertStringToOptionalDouble(wordList[3]);
         int ownerMemberID = convertStringToInt(wordList[4]);
+        int skillID = convertStringToInt(wordList[5]);
 
         // Get the owner and their skill
         auto ownerMemberIt = inputStorageMemberList.find(ownerMemberID);
@@ -385,16 +386,19 @@ void InputData::inputMemberRentSkillFromFile() {
         int skillID = convertStringToInt(wordList[3]);
 
         // Retrieve the member and skill objects
-        auto memberIt = inputStorageMemberList.find(memberID);
-        auto skillIt = inputStorageSkillList.find(skillID);
+        auto skillOwnerIt = inputStorageSkillList.find(skillID);
+        auto rentingMemberIt = inputStorageMemberList.find(memberID);
 
-        if (memberIt != inputStorageMemberList.end() && skillIt != inputStorageSkillList.end()) {
-            Member* member = memberIt->second;
-            Skill* skill = skillIt->second;
+        if (skillOwnerIt != inputStorageSkillList.end() && rentingMemberIt != inputStorageMemberList.end()) {
+            Member* skillOwner = skillOwnerIt->second->skillOwner;
+            Member* rentingMember = rentingMemberIt->second;
+            Skill* skill = skillOwner->ownedSkill;
 
             // Create and store the skill rental
-            auto *skillRent = new SkillRent(rentFromDate, rentToDate, member);
-            skill->addSkillRent(skillRent); // Use the public method to add to skillRentList
+            auto *memberRent = new MemberRent(rentFromDate, rentToDate, skillOwnerIt->second);
+            auto *skillRent = new SkillRent(rentFromDate, rentToDate, rentingMember, skillOwner);
+            skillOwner->addHost(memberRent); // addHost to MemberRentSkill
+            skill->addSkillRent(skillRent);
         } else {
             std::cerr << "Invalid member ID or skill ID in data file: " << line << "\n";
         }
@@ -443,7 +447,7 @@ void InputData::inputMemberRatingSkillAndSupporterFromFile() {
             auto *rating = new Rating(scores, comment, member);
 
             // Add rating to both Member and Skill if needed
-            member->addRatingToMemberRentList(rating);
+            member->addToRateSupporterAndSkillList(rating);
             // If Skill class also needs to store ratings, add a method in Skill class and call it here
             // skill->addRating(rating);
         } else {
@@ -476,31 +480,31 @@ void InputData::inputMemberRatingHostFromFile() {
             wordList.push_back(word);
         }
 
-
         int hostRating = convertStringToInt(wordList[0]);
         std::string comment = wordList[1];
-        int memberID = convertStringToInt(wordList[2]);
-        int reviewerID = convertStringToInt(wordList[3]); // ID of the member who is giving the review
+        int reviewerID = convertStringToInt(wordList[2]); // ID of the member who is giving the review
+        int hostID = convertStringToInt(wordList[3]); // ID of the host (the one who received the review)
 
-        // Retrieve the member and the reviewer objects from storage
-        auto memberIt = inputStorageMemberList.find(memberID);
+        // Retrieve the reviewer and the host objects from storage
         auto reviewerIt = inputStorageMemberList.find(reviewerID);
+        auto hostIt = inputStorageMemberList.find(hostID);
 
-        if (memberIt != inputStorageMemberList.end() && reviewerIt != inputStorageMemberList.end()) {
-            Member* member = memberIt->second;
+        if (reviewerIt != inputStorageMemberList.end() && hostIt != inputStorageMemberList.end()) {
             Member* reviewer = reviewerIt->second;
+            Member* host = hostIt->second;
 
             // Create and store the rating
             RatingScores scores(0, 0, hostRating);
             auto *rating = new Rating(scores, comment, reviewer);
 
-            // Add rating to the member's rating list
-            member->addRatingToMemberRentList(rating);
+            // Add rating to the host's rating list
+            host->addToRateHostList(rating);
         } else {
-            std::cerr << "Invalid member ID or reviewer ID in data file: " << line << "\n";
+            std::cerr << "Invalid reviewer ID or host ID in data file: " << line << "\n";
         }
     }
 }
+
 
 
 void InputData::inputCompletedSessionFromFile() {
@@ -533,18 +537,19 @@ void InputData::inputCompletedSessionFromFile() {
         DateTime *rentFrom = convertStringToDateTime(wordList[0]);
         DateTime *rentTo = convertStringToDateTime(wordList[1]);
         int skillID = convertStringToInt(wordList[2]);
-        int supporterID = convertStringToInt(wordList[3]);
+        int hostID = convertStringToInt(wordList[3]);
 
         // Retrieve Member and Skill objects
-        auto supporterIt = inputStorageMemberList.find(supporterID);
+        auto hostIt = inputStorageMemberList.find(hostID);
         auto skillIt = inputStorageSkillList.find(skillID);
 
         // Check if Member and Skill exist
-        if (supporterIt != inputStorageMemberList.end() && skillIt != inputStorageSkillList.end()) {
+        if (hostIt != inputStorageMemberList.end() && skillIt != inputStorageSkillList.end()) {
+            Member *supporter = skillIt->second->skillOwner;
             // Create a new SkillRent object for the unrated session
-            auto *completedSession = new SkillRent(rentFrom, rentTo, supporterIt->second);
+            auto *completedSession = new SkillRent(rentFrom, rentTo, hostIt->second, supporter);
             // Add this unrated session to the Skill object
-            skillIt->second->addSkillRent(completedSession); 
+            skillIt->second->addCompletedSession(completedSession); 
         } else {
             std::cerr << "Invalid Member ID or Skill ID in data file: " << line << "\n";
         }

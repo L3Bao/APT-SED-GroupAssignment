@@ -214,7 +214,7 @@ void OutputData::outputMemberRatingSkillAndSupporterToFile() {
     }
 
     for (auto &member: outputStorageMemberList) {
-        for (auto &rating: member->memberRatingList) {
+        for (auto &rating: member->memberRatingSupporterAndSkillList) {
             // Assuming that getSkillRating() returns the skill rating and reviewedByMember points to the member who made the rating
             os << rating->scores.getSkillRating() << ","
                << rating->scores.getSupporterRating() << ","
@@ -228,7 +228,7 @@ void OutputData::outputMemberRatingSkillAndSupporterToFile() {
 }
 
 
-//Output skillOwner review Renter to data file /Storage/MemberReviewRenter.csv
+//Output skillOwner review Renter to data file /Storage/MemberRatingHost.csv
 void OutputData::outputMemberRatingHostToFile()
 {
     std::ofstream os {MEMBER_RATING_RENTER_PATH};
@@ -239,12 +239,12 @@ void OutputData::outputMemberRatingHostToFile()
     }
 
     for (auto &member: outputStorageMemberList) {
-        for (auto &memberReview: member->memberRatingList) {
+        for (auto &memberReview: member->memberRatingHostList) {
             std::stringstream ss;
-            ss << memberReview->scores.getHostRating() << "," //score rating
-               << memberReview->comment << ","     //comment
-               << memberReview->reviewedByMember->memberID << "," //memberID
-               << member->memberID << "\n";          //renterID
+            ss << memberReview->scores.getHostRating() << "," // Host rating score
+               << memberReview->comment << ","                // Comment
+               << memberReview->reviewedByMember->memberID << "," // Member ID (the one who gave the rating)
+               << member->memberID << "\n";                     // Host ID (the one who received the rating)
             std::string line = ss.str();
             os << line;
         }
@@ -252,6 +252,7 @@ void OutputData::outputMemberRatingHostToFile()
 
     os.close();
 }
+
 
 //Output renter id and skill info that unrated the skill after rent. /Storage/CompletedSessionList.csv
 void OutputData::outputCompletedSessionListToFile()

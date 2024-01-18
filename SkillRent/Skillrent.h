@@ -9,11 +9,8 @@ class SkillRent {
     DateTime *rentTo;
     Member *rentedByMember;
     Member *supportedByMember;
-    bool isSupporter;
 public:
-    SkillRent(DateTime *rentFromDate, DateTime *rentToDate, Member *rentedByMember);
-
-    SkillRent(DateTime *rentFromDate, DateTime *rentToDate, Member *supportedByMember, bool isSupporter);
+    SkillRent(DateTime *rentFromDate, DateTime *rentToDate, Member *rentedByMember, Member *supportedByMember);
 
     friend class System;
 

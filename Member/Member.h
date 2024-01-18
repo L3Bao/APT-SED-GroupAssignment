@@ -28,7 +28,9 @@ class Member: public User {
 
     Skill *ownedSkill;
 
-    std::vector<Rating*> memberRatingList;
+    std::vector<Rating*> memberRatingSupporterAndSkillList;
+
+    std::vector<Rating*> memberRatingHostList;
 
     std::vector<Request*> memberRequestList;
 
@@ -53,9 +55,9 @@ public:
 
     bool acceptRequest(int acceptedRequestID);
 
-    bool completeRequest(int completedSkillID, bool isSupporter); 
+    bool completeRequest(int completedSkillID); 
 
-    bool rateSupporterAndSkill(int reviewingHostID, int skillRating, int supporterRating, std::string comment);
+    bool rateSupporterAndSkill(Member* supporter, int skillRating, int supporterRating, std::string comment);
 
     bool setNewSkill(Skill *skill); 
 
@@ -75,7 +77,9 @@ public:
 
     bool showCompletedSession();
 
-    bool addRatingToMemberRentList(Rating *memberRating);
+    bool addToRateSupporterAndSkillList(Rating *memberRating);
+
+    bool addToRateHostList(Rating *memberRating);
 
     bool minusCreditPoints(int points);
 
