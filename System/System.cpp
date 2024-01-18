@@ -351,9 +351,9 @@ bool System::blockMemberInteraction(Member* requestingMember) {
     // Call the blockMember method of the requestingMember
     bool success = requestingMember->blockMember(targetMember, blockView, blockRequestSupport);
     if (success) {
-        std::cout << "Block settings updated successfully.\n";
-         auto *newBlock = new BlockedMember(requestingMember->memberID, targetMember->memberID, blockView, blockRequestSupport);
+        auto *newBlock = new BlockedMember(requestingMember->memberID, targetMember->memberID, blockView, blockRequestSupport);
         addBlockedMember(newBlock);
+        std::cout << "Block settings updated successfully.\n";
     } else {
         std::cerr << "Failed to update block settings.\n";
     }
@@ -367,7 +367,7 @@ bool System::blockMemberInteraction(Member* requestingMember) {
         return blockMemberInteraction(currentMember); // Recursively call the function to block another member
     }
 
-    return success;
+    return true;
 }
 
 //main menu

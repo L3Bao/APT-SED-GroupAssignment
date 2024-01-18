@@ -19,7 +19,6 @@
 OutputData::OutputData() {
     this->outputStorageSkillList.clear();
     this->outputStorageMemberList.clear();
-    this->outputStorageBlockedMemberList.clear();
 }
 
 void OutputData::outputStorageLoadMemberListFromSystem(System *system) {
@@ -298,24 +297,28 @@ void OutputData::updatePasswordtoFile(std::vector<Member*> memberList) {
     os.close();
 }
 
-void OutputData::outputBlockedMemberToFile() {
-    std::ofstream os(MEMBER_BLOCK_LIST_PATH);
+void OutputData::outputBlockedMemberToFile() {  
+    std::ofstream os(MEMBER_BLOCK_LIST_PATH, std::ios::trunc);
 
     if (!os) {
         std::cerr << "Cannot open " << MEMBER_BLOCK_LIST_PATH << " for output\n";
         return;
     }
 
-    bool isFirstMember = true;
+    // Check if the file is empty
+    os.seekp(0, std::ios::end); // Move to the end of the file
+    bool isEmpty = os.tellp() == 0; // Check if the file position is at the start
+
+    // If the file is not empty and there are blocked members to write, add a newline first
+    if (!isEmpty && !outputStorageBlockedMemberList.empty()) {
+        os << "\n";
+    }
+
     for (auto &blockedMember : outputStorageBlockedMemberList) {
-        if (!isFirstMember) {
-            os << "\n";
-        } 
         os << blockedMember->getBlockerID() << ","
            << blockedMember->getBlockedID() << ","
            << blockedMember->isBlockView() << ","
-           << blockedMember->isBlockRequestSupport();
-        isFirstMember = false;
+           << blockedMember->isBlockRequestSupport() << "\n";
     }
 
     os.close();
