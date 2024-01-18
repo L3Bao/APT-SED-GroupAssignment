@@ -6,6 +6,7 @@
 #include "../Validation/Validation.h"
 #include <iostream>
 #include <vector>
+#include <map>
 #include <optional>
 
 class Skill;
@@ -14,6 +15,7 @@ class Request;
 class MemberRent;
 class DateTime;
 class Member;
+class BlockedMember;
 
 struct MemberBlock {
     Member* blockedMember;
@@ -42,6 +44,8 @@ class Member: public User {
     std::vector<MemberRent*> memberRentList;
 
     std::vector<MemberBlock> blockedMemberList;
+
+    std::map<int, BlockedMember*> blockedMembers;
 
 public:
     Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName, std::string phoneNumber, std::string email, std::string address, int creditPoints = 20);
@@ -95,6 +99,8 @@ public:
     std::string guestViewSupporterInfo();
 
     std::string viewSupporterInfoInDetail();
+
+    void addBlockedMember(Member* blockedMember, bool blockView, bool blockRequestSupport);
 
     // Method for blocking another member
     bool blockMember(Member* memberToBlock, bool blockView, bool blockRequestSupport);

@@ -15,7 +15,7 @@ class InputData {
     std::map<int, Member*> inputStorageMemberList;
     std::map<int, Skill*> inputStorageSkillList;
     std::vector<Admin*> inputStorageAdminList;
-    std::map<BlockKey, BlockedMember*> inputStorageBlockedMemberlist;
+    std::map<int, BlockedMember*> inputStorageBlockedMemberlist;
 
     void inputStorageLoadSkillListToSystem(System *system);
     void inputStorageLoadMemberListToSystem(System *system);

@@ -18,3 +18,8 @@ int BlockedMember::getBlockerID(){
 int BlockedMember::getBlockedID(){
     return blockedID;
 }
+
+void BlockedMember::updateBlockSettings(bool newBlockView, bool newBlockRequestSupport) {
+    this->blockView = newBlockView;
+    this->blockRequestSupport = newBlockRequestSupport;
+}

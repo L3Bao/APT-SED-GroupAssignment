@@ -48,14 +48,14 @@ void InputData::inputStorageLoadAdminListToSystem(System *system) {
     }
 }
 
-void InputData::inputStorageLoadBlockedMemberListToSystem(System *system) {
+/* void InputData::inputStorageLoadBlockedMemberListToSystem(System *system) {
     system->systemBlockedMemberList.clear();
 
     // Add blocked member to the system's admin list
     for (auto &blockedMember: inputStorageBlockedMemberlist) {
         system->addBlockedMember(blockedMember.second);
     }
-}
+} */
 
 void InputData::inputMemberListFromFile() {
     std::ifstream is {MEMBER_PATH};
@@ -252,12 +252,16 @@ void InputData::inputBlockedMemberListFromFile() {
 
         int blockerID = convertStringToInt(wordList[0]);
         int blockedID = convertStringToInt(wordList[1]);
-        bool isBlockView = convertStringToBool(wordList[2]);
-        bool isBlockRequestSupport = convertStringToBool(wordList[3]);
+        bool blockView = convertStringToBool(wordList[2]);
+        bool blockRequestSupport = convertStringToBool(wordList[3]);
 
-        BlockKey key(blockerID, blockedID);
-        auto *blockedMember = new BlockedMember(blockerID, blockedID, isBlockView, isBlockRequestSupport);
-        inputStorageBlockedMemberlist[key] = blockedMember;
+        auto blockerIt = inputStorageMemberList.find(blockerID);
+        auto blockedIt = inputStorageMemberList.find(blockedID);
+
+        if (blockerIt != inputStorageMemberList.end() && blockedIt != inputStorageMemberList.end()) {
+            // Update the blocker member with the block information
+            blockerIt->second->addBlockedMember(blockedIt->second, blockView, blockRequestSupport);
+        }
     }
 }
 

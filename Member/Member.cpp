@@ -12,6 +12,7 @@
 #include "../Skill/Skill.h"
 #include "../Middleware/Middleware.h"
 #include "../Request/Request.h"
+#include "../Member/BlockedMember.h";
 
 //Constructor
 Member::Member(int memberID, std::string username, std::string password, std::string firstName, std::string lastName, std::string phoneNumber, std::string email, std::string address, int creditPoints) : User(std::move(username), std::move(password)) {
@@ -449,6 +450,25 @@ bool Member::showCompletedSession() {
     }
 
     return true;
+}
+
+void Member::addBlockedMember(Member* blockedMember, bool blockView, bool blockRequestSupport) {
+    if (blockedMember == nullptr) {
+        // Handle the error appropriately
+        return;
+    }
+
+    int blockedID = blockedMember->memberID; // Assuming Member has a method getId()
+
+    // Check if the member is already blocked
+    auto it = blockedMembers.find(blockedID);
+    if (it != blockedMembers.end()) {
+        // Update existing block settings
+        it->second->updateBlockSettings(blockView, blockRequestSupport);
+    } else {
+        // Create a new BlockedMember and add it to the map
+        blockedMembers[blockedID] = new BlockedMember(this->memberID, blockedID, blockView, blockRequestSupport);
+    }
 }
 
 bool Member::isMemberBlocked(Member* member) {
