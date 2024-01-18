@@ -242,7 +242,6 @@ void InputData::inputBlockedMemberListFromFile() {
 
         int blockerID = convertStringToInt(wordList[0]);
         int blockedID = convertStringToInt(wordList[1]);
-        std::cout << "Parsed Block Relationship: Blocker ID " << blockerID << ", Blocked ID " << blockedID << "\n";
         bool blockView = convertStringToBool(wordList[2]);
         bool blockRequestSupport = convertStringToBool(wordList[3]);
 

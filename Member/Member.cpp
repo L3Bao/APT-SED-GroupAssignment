@@ -410,18 +410,17 @@ std::string Member::viewSupporterInfoInDetail() {
 }
 
 bool Member::blockMember(Member* memberToBlock, bool blockView, bool blockRequestSupport) {
-    // Check if memberToBlock is valid and not the same as the current member
     if (memberToBlock == nullptr || memberToBlock == this) {
         return false;
     }
 
-    // Check if the member is already blocked
-    if (isMemberBlocked(memberToBlock)) {
-        return false;
+    int blockedID = memberToBlock->memberID;
+    auto it = blockedMembers.find(blockedID);
+    if (it != blockedMembers.end()) {
+        it->second->updateBlockSettings(blockView, blockRequestSupport);
+    } else {
+        blockedMembers[blockedID] = new BlockedMember(this->memberID, blockedID, blockView, blockRequestSupport);
     }
-
-    // Add to blocked list with specified block types
-    blockedMemberList.emplace_back(memberToBlock, blockView, blockRequestSupport);
 
     return true;
 }
@@ -472,31 +471,35 @@ void Member::addBlockedMember(Member* blockedMember, bool blockView, bool blockR
 }
 
 bool Member::isMemberBlocked(Member* member) {
-    // Check if the member is in the blocked list
-    for (const auto& block : blockedMemberList) {
-        if (block->blockedID == member->memberID) {
-            return true;
-        }
+    if (member == nullptr) {
+        return false;
+    }
+
+    return blockedMembers.find(member->memberID) != blockedMembers.end();
+}
+
+bool Member::isBlockedForViewing(Member* member) {
+    if (member == nullptr) {
+        return false;
+    }
+
+    auto it = blockedMembers.find(member->memberID);
+    if (it != blockedMembers.end()) {
+        return it->second->isBlockView();
     }
     return false;
 }
 
-bool Member::isBlockedForViewing(Member* member) {
-    for (const auto& blockedMember : blockedMemberList) {
-        if (blockedMember->getBlockedID() == member->memberID && blockedMember->isBlockView()) {
-            return true; // The member is blocked from viewing
-        }
-    }
-    return false; // No block found for viewing
-}
-
 bool Member::isBlockedForRequesting(Member* member) {
-    for (const auto& block : blockedMemberList) {
-        if (block->getBlockedID() == member->memberID && block->isBlockRequestSupport()) {
-            return true; // The member is blocked from requesting support
-        }
+    if (member == nullptr) {
+        return false;
     }
-    return false; // No block found for requesting support
+
+    auto it = blockedMembers.find(member->memberID);
+    if (it != blockedMembers.end()) {
+        return it->second->isBlockRequestSupport();
+    }
+    return false;
 }
 
 // Destructor
@@ -511,7 +514,7 @@ Member::~Member() {
     for (auto &request : memberRequestList) {
         delete request;
     }
-    for (auto &block : blockedMemberList) {
-        delete block;
+    for (auto &block : blockedMembers) {
+        delete block.second;
     }
 }

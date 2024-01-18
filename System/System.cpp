@@ -749,21 +749,32 @@ void System::memberMenu(){
     //end menu
 
 void System::viewMemberInformation() {
-    std::cout << "Select a member to view their information:\n";
-    Member* selectedMember = chooseMember();
+    while (true) {
+        std::cout << "Select a member to view their information:\n";
+        Member* selectedMember = chooseMember();
 
-    if (selectedMember == nullptr) {
-        std::cout << "Returning to the previous menu...\n";
-        return;
+        if (selectedMember == nullptr) {
+            std::cout << "Returning to the previous menu...\n";
+            return;
+        }
+
+        if (selectedMember->isBlockedForViewing(currentMember)) {
+            std::cout << "You are blocked from viewing this member's information.\n";
+        } else {
+            selectedMember->showMemInfo();
+        }
+
+        std::cout << "\nChoose an option:\n";
+        std::cout << "1. Back to Member Menu\n";
+        std::cout << "2. View another Supporter's Information\n";
+        int choice = choiceFunc(1, 2);
+
+        if (choice == 1) {
+            memberMenu();  // go back to the member Menu
+            break;
+        }
+        // If choice is 2, the loop continues for viewing another supporter's information
     }
-
-    if (selectedMember->isBlockedForViewing(currentMember)) {
-        std::cout << "You are blocked from viewing this member's information.\n";
-        return;
-    }
-
-    selectedMember->showMemInfo();
-    return;
 }
 
     //list menu (feature 5)

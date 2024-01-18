@@ -55,10 +55,7 @@ void OutputData::outputMemberListToFile() {
     for (auto &member: outputStorageMemberList) {
         if (!isFirstMember) {
             os << "\n";
-        } else {
-            isFirstMember = false;
         }
-
         os << member->memberID << ","
            << member->username << ","
            << member->password << ","
@@ -67,7 +64,9 @@ void OutputData::outputMemberListToFile() {
            << member->phoneNumber << ","
            << member->email << ","
            << member->address << ","
-           << member->creditPoints << "\n";
+           << member->creditPoints;
+
+        isFirstMember = false;
     }
 
     // Close the file
@@ -311,13 +310,12 @@ void OutputData::outputBlockedMemberToFile() {
     for (auto &blockedMember : outputStorageBlockedMemberList) {
         if (!isFirstMember) {
             os << "\n";
-        } else {
-            isFirstMember = false;
-        }
+        } 
         os << blockedMember->getBlockerID() << ","
            << blockedMember->getBlockedID() << ","
            << blockedMember->isBlockView() << ","
-           << blockedMember->isBlockRequestSupport() << "\n";
+           << blockedMember->isBlockRequestSupport();
+        isFirstMember = false;
     }
 
     os.close();

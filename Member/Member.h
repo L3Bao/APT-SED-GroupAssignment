@@ -34,8 +34,6 @@ class Member: public User {
 
     std::vector<MemberRent*> memberRentList;
 
-    std::vector<BlockedMember*> blockedMemberList;
-
     std::map<int, BlockedMember*> blockedMembers;
 
 public:
