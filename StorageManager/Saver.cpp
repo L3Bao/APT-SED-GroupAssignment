@@ -270,7 +270,7 @@ void OutputData::outputCompletedSessionListToFile()
     os.close();
 }
 
-void OutputData::updatePasswordtoFile(std::vector<Member*> memberList) {
+void OutputData::updateMemInfotoFile(std::vector<Member*> memberList) {
     std::ofstream os(MEMBER_PATH, std::ios::trunc);
 
     if (!os) {
@@ -298,7 +298,7 @@ void OutputData::updatePasswordtoFile(std::vector<Member*> memberList) {
 }
 
 void OutputData::outputBlockedMemberToFile() {  
-    std::ofstream os(MEMBER_BLOCK_LIST_PATH, std::ios::trunc);
+    std::ofstream os(MEMBER_BLOCK_LIST_PATH, std::ios::app);
 
     if (!os) {
         std::cerr << "Cannot open " << MEMBER_BLOCK_LIST_PATH << " for output\n";
@@ -318,7 +318,7 @@ void OutputData::outputBlockedMemberToFile() {
         os << blockedMember->getBlockerID() << ","
            << blockedMember->getBlockedID() << ","
            << blockedMember->isBlockView() << ","
-           << blockedMember->isBlockRequestSupport() << "\n";
+           << blockedMember->isBlockRequestSupport();
     }
 
     os.close();

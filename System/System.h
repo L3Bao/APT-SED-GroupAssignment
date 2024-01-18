@@ -105,6 +105,8 @@ public:
 
     bool blockMemberInteraction(Member* requestingMember);
 
+    void topUpCreditPoints();
+
     void guestMenu();
 
     void viewMemberInformation();

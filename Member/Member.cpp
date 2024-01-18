@@ -98,7 +98,7 @@ bool Member::listSkill(DateTime *startTime, DateTime *endTime, int creditPointsP
 
 // Unlist the skill
 bool Member::unlistSkill() {
-    if (!ownedSkill->isListed || ownedSkill->skillRequestList.empty()) {
+    if (!ownedSkill->isListed || !ownedSkill->skillRequestList.empty()) {
         return false;
     }
 
@@ -500,6 +500,23 @@ bool Member::isBlockedForRequesting(Member* member) {
         return it->second->isBlockRequestSupport();
     }
     return false;
+}
+
+bool Member::topUpCreditPoints(int amount, const std::string& password) {
+    if (amount <= 0) {
+        std::cerr << "Invalid amount. The amount must be positive.\n";
+        return false;
+    }
+
+    if (this->password != password) {
+        std::cerr << "Incorrect password. Authorization failed.\n";
+        return false;
+    }
+
+    // Increase the credit points
+    this->creditPoints += amount;
+    std::cout << "Credit points successfully topped up by " << amount << ". New balance: " << this->creditPoints << ".\n";
+    return true;
 }
 
 // Destructor

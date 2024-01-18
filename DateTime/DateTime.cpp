@@ -18,6 +18,14 @@ bool DateTime::operator<(DateTime &other) {
     }
 }
 
+bool DateTime::operator==(DateTime &other) {
+    return this->hour == other.hour && this->minute == other.minute;
+}
+
+bool DateTime::operator<=(DateTime &other) {
+    return *this < other || *this == other;
+}
+ 
 int DateTime::operator-(DateTime &other) {
     // Convert the time to minutes
     int thisTime = this -> hour * 60 + this -> minute;

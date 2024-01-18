@@ -102,6 +102,8 @@ public:
 
     void setPassword(const std::string& newPassword);
 
+    bool topUpCreditPoints(int amount, const std::string& password);
+
     ~Member();
 
     friend class System;

@@ -39,7 +39,7 @@ public:
 
     void outputStorageLoadDataFromSystem(System *system);
 
-    void updatePasswordtoFile(std::vector<Member*> memberList);
+    void updateMemInfotoFile(std::vector<Member*> memberList);
 
 };
 

@@ -67,6 +67,7 @@ void System::addBlockedMember(BlockedMember *blockedMember) {
 //Function to show suitable supporter list
 bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTime, int cityID) {
     memberSuitableSkillList.clear();
+    suitableSkillsList.clear();
 
     // If that member already send another request for this supporter and that request is overlapped with the current request
     for (auto &request: currentMember->memberRequestList) {
@@ -82,11 +83,15 @@ bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTim
 
     // Find the avalaible supporter
     for (auto &skill : systemSkillList) {
-    if (isSuitableSkill(startTime, endTime, cityID - 1, skill)) {
-        suitableSkillsList.push_back(skill); // Add the skill
-        // If you also want to keep track of the members
-        memberSuitableSkillList.push_back(skill->skillOwner); // Add the skill owner
-    }
+        // Skip the current member's skills
+        if (skill->skillOwner == currentMember) {
+            continue;
+        }
+        if (isSuitableSkill(startTime, endTime, cityID - 1, skill)) {
+            suitableSkillsList.push_back(skill); // Add the skill
+            // If you also want to keep track of the members
+            memberSuitableSkillList.push_back(skill->skillOwner); // Add the skill owner
+        }
 }
 
 
@@ -119,6 +124,10 @@ bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTim
 
 //Function to check if the supporter is suitable to the member
 bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID, Skill *skill) {
+    std::cout << "Checking skill availability: " << skill->availableFrom->toString() 
+              << " to " << skill->availableTo->toString() << std::endl;
+    std::cout << "Against requested time: " << startTime->toString() 
+              << " to " << endTime->toString() << std::endl;
 
     auto [avgSkillRating, avgSupporterRating, avgHostRating] = skill->skillOwner->getRatingScore();
 
@@ -137,10 +146,14 @@ bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID,
         return false;
     }
 
-    // If the supporter is not available from the start and end date
-    if (*startTime - *(skill->availableFrom) < 0 || *skill->availableTo - *endTime < 0) {
-        return false;
+    if ((*skill->availableFrom <= *startTime || *skill->availableFrom == *startTime) && 
+    (*endTime <= *skill->availableTo || *endTime == *skill->availableTo)) {
+    // Supporter is available in the requested time slot
+    } else {
+        return false; // Supporter is not available
     }
+
+
 
     // If the user do not have enough credit Points
     int differenceBetweenStartAndendTime = *endTime - *startTime;
@@ -154,18 +167,14 @@ bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID,
     }
 
     // Loop over the rent status of the skill for checking
-    for (auto &rent: skill->skillRentList) {
-
-        // If the startTime and endTime is not rented by another
-        if ((startTime < rent->rentFrom && endTime < rent->rentTo)
-            || (startTime > rent->rentFrom && endTime > rent->rentTo)) {
-            continue;
+    for (auto &rent : skill->skillRentList) {
+        // Check if the requested time overlaps with the rented time
+        if (!(endTime <= rent->rentFrom || startTime >= rent->rentTo)) {
+            // The requested time slot overlaps with a rented time slot
+            return false;
         }
-
-        return false;
     }
 
-    
 
     return true;
 }
@@ -336,11 +345,15 @@ bool System::blockMemberInteraction(Member* requestingMember) {
 
     bool blockView = false, blockRequestSupport = false;
 
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     // Check if already blocked from viewing and ask if not
     if (!requestingMember->isBlockedForViewing(targetMember)) {
         std::cout << "Do you want to block this member from viewing your information? (yes/no): ";
         blockView = getUserYesNoResponse();
     }
+
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     // Check if already blocked from requesting support and ask if not
     if (!requestingMember->isBlockedForRequesting(targetMember)) {
@@ -573,7 +586,7 @@ bool System::adminChangePassword() {
     std::cout << "Password for member " << mem->username  << " has been reset.\n";
 
     OutputData outputData;
-    outputData.updatePasswordtoFile(systemMemberList);
+    outputData.updateMemInfotoFile(systemMemberList);
 
     std::cout << "\n1. Return to Admin Menu\n2. Change another password\n";
     int choice = choiceFunc(1, 2);
@@ -698,8 +711,9 @@ void System::memberMenu(){
               << "--> 6.\tView currently supported skill\n"
               << "--> 7.\tView completed session list\n"
               << "--> 8.\tBlock member\n"
-              << "--> 9.\tSign out\n";
-    switch(choiceFunc(1,9)){
+              << "--> 9.\tTop up credit points\n"
+              << "--> 10.\tSign out\n";
+    switch(choiceFunc(1,10)){
         case 1:
             //View member info
             currentMember->showMemInfo();
@@ -739,6 +753,9 @@ void System::memberMenu(){
             blockMemberInteraction(currentMember);
             break;
         case 9:
+            topUpCreditPoints();
+            break;
+        case 10:
             //Sign out and go back to main menu
             setCurrentMember(nullptr);
             clearScreen();
@@ -747,6 +764,40 @@ void System::memberMenu(){
     }
 }
     //end menu
+
+void System::topUpCreditPoints() {
+    int amount;
+    std::string password;
+
+    std::cout << "Enter the amount to top up (in credit points): ";
+    std::cin >> amount;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the input buffer
+
+    // Validate the amount
+    if (amount <= 0) {
+        std::cerr << "Invalid amount. Please enter a positive number.\n";
+        return;
+    }
+
+    std::cout << "Enter your password for authorization: ";
+    std::getline(std::cin, password);
+
+    // Call the top-up method on the current member
+    if (currentMember->topUpCreditPoints(amount, password)) {
+        OutputData od;
+        od.updateMemInfotoFile(systemMemberList);
+        std::cout << "Credit points successfully topped up.\n";
+    } else {
+        std::cerr << "Failed to top up credit points. Please check the amount and your password.\n";
+    }
+
+    std::cout << "\n1. Return to member Menu\n";
+    int choice = choiceFunc(1, 1);
+
+    if (choice == 1) {
+        memberMenu();
+    }
+}
 
 void System::viewMemberInformation() {
     while (true) {
@@ -839,8 +890,7 @@ void System::memberListMenu(){
                 case 2:
                     memberMenu();
                     break;
-            }
-    }
+            }   }
 }
 
 bool System::memberEnterSkillInfo() {
@@ -877,6 +927,7 @@ bool System::memberEnterSkillInfo() {
     currentMember->setNewSkill(newSkill);
     return true;
 }
+ 
 
 
 //Feature 5: A member can list himself/herself available to be booked (including skills can be performed, consuming points per hour, with/without minimum required host-rating score), and unlist if wanted.
