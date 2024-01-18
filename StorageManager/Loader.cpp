@@ -5,6 +5,7 @@
 #include "../System/System.h"
 #include "../Admin/Admin.h"
 #include "../Member/Member.h"
+#include "../Member/BlockedMember.h"
 #include "../Skill/Skill.h"
 #include "../MemberRent/MemberRent.h"
 #include "../DateTime/DateTime.h"
@@ -16,9 +17,10 @@
 
 
 InputData::InputData() {
-    // Clear all data from two lists
+    // Clear all data from three lists
     inputStorageMemberList.clear();
     inputStorageSkillList.clear();
+    inputStorageBlockedMemberlist.clear();
 }
 
 void InputData::inputStorageLoadSkillListToSystem(System *system) {
@@ -46,6 +48,15 @@ void InputData::inputStorageLoadAdminListToSystem(System *system) {
     }
 }
 
+void InputData::inputStorageLoadBlockedMemberListToSystem(System *system) {
+    system->systemBlockedMemberList.clear();
+
+    // Add blocked member to the system's admin list
+    for (auto &blockedMember: inputStorageBlockedMemberlist) {
+        system->addBlockedMember(blockedMember.second);
+    }
+}
+
 void InputData::inputMemberListFromFile() {
     std::ifstream is {MEMBER_PATH};
 
@@ -60,7 +71,7 @@ void InputData::inputMemberListFromFile() {
     // Loop through every line
     while (std::getline(is, line)) {
 
-        // ss1 for splitting comma, ss2 for storage data
+        // ss1 for splitting comma
         std::stringstream ss1 {line};
         std::string word;
         std::vector<std::string> wordList;
@@ -115,9 +126,9 @@ void InputData::inputSkillListFromFile() {
         int skillID = convertStringToInt(tokens[0]);
         std::vector<std::string> skillList;
         
-        // Assuming the second token is a comma-separated list of skills
+        
         std::stringstream ssSkills(tokens[1]);
-        while (std::getline(ssSkills, word, ';')) {  // Assuming skills are separated by semi-colons
+        while (std::getline(ssSkills, word, ';')) {  // Skills are separated by semi-colons
             skillList.push_back(word);
         }
 
@@ -216,6 +227,40 @@ void InputData::inputAdminListFromFile() {
     }
 }
 
+void InputData::inputBlockedMemberListFromFile() {
+    std::ifstream is{MEMBER_BLOCK_LIST_PATH};
+
+    if(!is.is_open()) {
+        std::cerr << "Cannot open " << MEMBER_BLOCK_LIST_PATH << " for input\n";
+        return;
+    }
+
+    std::string line;
+
+    while (std::getline(is, line)) {
+        std::stringstream ss(line);
+        std::string word;
+        std::vector<std::string> wordList;
+
+        if (line.empty()) {
+            continue;
+        }
+
+        while(std::getline(ss, word, ',')) {
+            wordList.push_back(word);
+        }
+
+        int blockerID = convertStringToInt(wordList[0]);
+        int blockedID = convertStringToInt(wordList[1]);
+        bool isBlockView = convertStringToBool(wordList[2]);
+        bool isBlockRequestSupport = convertStringToBool(wordList[3]);
+
+        BlockKey key(blockerID, blockedID);
+        auto *blockedMember = new BlockedMember(blockerID, blockedID, isBlockView, isBlockRequestSupport);
+        inputStorageBlockedMemberlist[key] = blockedMember;
+    }
+}
+
 void InputData::inputMemberListSkillFromFile() {
     std::ifstream is{MEMBER_LIST_SKILL_PATH};
 
@@ -301,8 +346,8 @@ void InputData::inputMemberRequestSkillFromFile() {
 
             // Create and store the request
             auto *request = new Request(requestFromDate, requestToDate, member);
-            member->addToRequestList(request); // Assuming Member has an addToRequestList method
-            skill->addRequestToSkillRequestList(request); // Assuming Skill has an addRequestToSkillRequestList method
+            member->addToRequestList(request); 
+            skill->addRequestToSkillRequestList(request); 
         } else {
             std::cerr << "Invalid member ID or skill ID in data file: " << line << "\n";
         }
@@ -392,7 +437,7 @@ void InputData::inputMemberRatingSkillAndSupporterFromFile() {
             Skill* skill = skillIt->second;
 
             // Create and store the rating
-            RatingScores scores(skillRating, supporterRating, 0); // Assuming skillRating is relevant here
+            RatingScores scores(skillRating, supporterRating, 0); //
             auto *rating = new Rating(scores, comment, member);
 
             // Add rating to both Member and Skill if needed
@@ -508,6 +553,7 @@ void InputData::inputStorageFromFileList() {
     inputMemberListFromFile();
     inputSkillListFromFile();
     inputAdminListFromFile();
+    inputBlockedMemberListFromFile();
     inputMemberOwnSkillFromFile();
     inputMemberListSkillFromFile();
     inputMemberRequestSkillFromFile();
@@ -521,6 +567,7 @@ void InputData::inputStorageLoadDataToSystem(System *system) {
     inputStorageLoadMemberListToSystem(system);
     inputStorageLoadSkillListToSystem(system);
     inputStorageLoadAdminListToSystem(system);
+    inputStorageLoadBlockedMemberListToSystem(system);
 }
 
 

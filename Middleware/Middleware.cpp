@@ -58,6 +58,10 @@ DateTime* convertStringToDateTime(std::string str) {
     return result;
 }
 
+bool convertStringToBool(std::string& str) {
+    return str == "1";
+}
+
 bool isNumber(std::string &str) {
     for (int i = 0; i < str.length(); i++) {
         if (i == 0){

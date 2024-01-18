@@ -9,19 +9,23 @@ class Member;
 class Skill;
 class System;
 class Admin;
+class BlockedMember;
 
 class InputData {
     std::map<int, Member*> inputStorageMemberList;
     std::map<int, Skill*> inputStorageSkillList;
     std::vector<Admin*> inputStorageAdminList;
+    std::map<BlockKey, BlockedMember*> inputStorageBlockedMemberlist;
 
     void inputStorageLoadSkillListToSystem(System *system);
     void inputStorageLoadMemberListToSystem(System *system);
     void inputStorageLoadAdminListToSystem(System *system);
+    void inputStorageLoadBlockedMemberListToSystem(System *system);
 
     void inputMemberListFromFile();
     void inputSkillListFromFile();
     void inputAdminListFromFile();
+    void inputBlockedMemberListFromFile();
 
     void inputMemberOwnSkillFromFile();
     void inputMemberListSkillFromFile();

@@ -3,6 +3,17 @@
 
 #include <string>
 
+struct BlockKey {
+    int blockerID;
+    int blockedID;
+
+    BlockKey(int blocker, int blocked) : blockerID(blocker), blockedID(blocked) {}
+
+    bool operator<(BlockKey& other) {
+        return std::tie(blockerID, blockedID) < std::tie(other.blockerID, other.blockedID);
+    }
+};
+
 class BlockedMember {
     int blockerID;
     int blockedID;

@@ -326,6 +326,7 @@ void OutputData::outputBlockedMemberToFile() {
 void OutputData::outputStorageLoadDataFromSystem(System *system) {
     outputStorageLoadMemberListFromSystem(system);
     outputStorageLoadSkillListFromSystem(system);
+    outputStorageBlockedMemberListFromSystem(system);
 }
 
 
