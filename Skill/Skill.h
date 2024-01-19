@@ -40,6 +40,7 @@ public:
     void addSkillRent(SkillRent* skillRent);
     std::string getSkillInfo() const;
     std::string getCityName() const;
+    std::string getListOfSkill() const;
 
     bool addRequestToSkillRequestList(Request* request);
     bool removeRequestFromSkillRequestList(Request *request);

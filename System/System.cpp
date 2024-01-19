@@ -83,8 +83,6 @@ bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTim
 
     // Iterate over all skills in the system
     for (auto &skill : systemSkillList) {
-        // Debugging: Log skill being checked
-        std::cout << "Checking skill ID: " << skill->skillID << "\n";
 
         if (skill->skillOwner == currentMember) {
             std::cout << "Skipping current member's skill\n";
@@ -93,11 +91,9 @@ bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTim
 
         // Check if skill is suitable
         if (isSuitableSkill(startTime, endTime, cityID - 1, skill)) {
-            std::cout << "Skill ID " << skill->skillID << " is suitable. Adding to list.\n";
             suitableSkillsList.push_back(skill); // Add skill
             memberSuitableSkillList.push_back(skill->skillOwner); // Add owner
         } else {
-            std::cout << "Skill ID " << skill->skillID << " is not suitable.\n";
         }
     }
 
@@ -112,9 +108,9 @@ bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTim
         Skill* skill = suitableSkillsList[i];
         Member* supporter = memberSuitableSkillList[i];
 
-        // Debugging: Log supporter details
+        // Log supporter details
         std::cout << "--> " << i + 1 << ". ";
-        std::cout << "Supporter ID: " << supporter->memberID << ", Skill ID: " << skill->skillID << "\n";
+        std::cout << "Supporter's Name: " << supporter->get_name() << ", Skill(s): " << skill->getListOfSkill() << "\n";
     }
     std::cout << "\n\n";
 
@@ -357,8 +353,6 @@ bool System::blockMemberInteraction(Member* requestingMember) {
 
     bool blockView = false, blockRequestSupport = false;
 
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
     // Check if already blocked from viewing and ask if not
     if (!requestingMember->isBlockedForViewing(targetMember)) {
         std::cout << "Do you want to block this member from viewing your information? (yes/no): ";
@@ -373,14 +367,24 @@ bool System::blockMemberInteraction(Member* requestingMember) {
         blockRequestSupport = getUserYesNoResponse();
     }
 
-    // Call the blockMember method of the requestingMember
-    bool success = requestingMember->blockMember(targetMember, blockView, blockRequestSupport);
-    if (success) {
-        auto *newBlock = new BlockedMember(requestingMember->memberID, targetMember->memberID, blockView, blockRequestSupport);
-        addBlockedMember(newBlock);
+    // Find if there's already a block between the two members
+    BlockedMember* existingBlock = nullptr;
+    for (auto &block : systemBlockedMemberList) {
+        if (block->getBlockerID() == requestingMember->memberID && block->getBlockedID() == targetMember->memberID) {
+            existingBlock = block;
+            break;
+        }
+    }
+
+    if (existingBlock) {
+        // Update existing block settings
+        existingBlock->updateBlockSettings(blockView, blockRequestSupport);
         std::cout << "Block settings updated successfully.\n";
     } else {
-        std::cerr << "Failed to update block settings.\n";
+        // Create a new block entry
+        auto *newBlock = new BlockedMember(requestingMember->memberID, targetMember->memberID, blockView, blockRequestSupport);
+        addBlockedMember(newBlock);
+        std::cout << "New block settings added successfully.\n";
     }
 
     std::cout << "\n1. Return to member Menu\n2. Block another member\n";
@@ -1035,53 +1039,65 @@ void System::memberSearchSuitableSkillMenu(){
 }
 
 void System::memberSuitableSkillMenu(DateTime *sD, DateTime *eD, int cityID) {
-    //Clear the suitable skill vector
+    // Clear the suitable skill vector
     memberSuitableSkillList.clear();
-    //Show suitable skills
+    // Show suitable skills
     memberSearchSuitableSkillList(sD, eD, cityID);
     std::cout << memberSuitableSkillList.size() + 1 << ". Back to member menu\n";
     int choice = choiceFunc(1, memberSuitableSkillList.size() + 1);
-    if (choice == (memberSuitableSkillList.size()+1)){
-        //Back to member menu
+    if (choice == (memberSuitableSkillList.size() + 1)) {
+        // Back to member menu
         memberMenu();
     } else {
-        //View skill info
-        std::cout << memberSuitableSkillList[choice - 1]->showMemInfo();
+        // Get selected member (potential supporter)
+        Member* potentialSupporter = memberSuitableSkillList[choice - 1];
+        
+        // Check if the current member is blocked from requesting support
+        if (potentialSupporter->isBlockedForRequesting(currentMember)) {
+            std::cout << "\nYou are blocked from requesting support from this member.\n";
+            std::cout << "\n--> 1.\tBack to skill list\n";
+            choiceFunc(1, 1);
+            memberSuitableSkillMenu(sD, eD, cityID);
+            return;
+        }
+
+        // Options for unblocked members
         std::cout << "\n\n--> 1.\tRequest supporter\n\n"
                   << "--> 2.\tView supporter reviews\n\n"
                   << "--> 3.\tBack to skill list\n";
-        switch (choiceFunc(1,3)){
+        switch (choiceFunc(1, 3)) {
             case 1:
-                //Send request to the supporter and go back to member menu
+                // Send request to the supporter and go back to member menu
                 memberSendRequest(sD, eD, choice - 1);
                 std::cout << "\n\tRequest sent\n";
                 memberMenu();
                 break;
             case 2:
-                //View supporter reviews
+                // View supporter reviews
                 memberViewSkillReviewList(choice - 1, sD, eD);
                 std::cout << "\n\n--> 1.\tRequest supporter\n\n"
                           << "--> 2.\tBack to skill list\n";
                 switch (choiceFunc(1, 2)) {
                     case 1:
-                        //Send request to the supporter
+                        // Send request to the supporter
                         memberSendRequest(sD, eD, choice - 1);
                         std::cout << "\tRequest sent\n";
                         memberMenu();
                         break;
                     case 2:
-                        //Back to suitable supporter list
+                        // Back to suitable supporter list
                         memberSuitableSkillMenu(sD, eD, cityID);
                         break;
                 }
                 break;
             case 3:
-                //Back to suitable supporter list
+                // Back to suitable supporter list
                 memberSuitableSkillMenu(sD, eD, cityID);
                 break;
         }
     }
 }
+
 
 void System::suitableSkillMenu(int choice, DateTime *sD, DateTime *eD, int cityID) {
     std::cout << memberSuitableSkillList[choice - 1]->showMemInfo() << "\n";
@@ -1289,6 +1305,7 @@ void System::hostRateSupporterMenu(int sessionIndex) {
     int userChoice = choiceFunc(1, 2);
     if (userChoice == 1) {
         memberRateSupporterAndSkill(supporter);
+        std::cout << "You have successfully rated the supporter and their skill(s)!";
         memberMenu();
     } else {
         completedSessionListMenu();
@@ -1331,9 +1348,3 @@ void System::memberViewRenterReviewList(int choice) {
         }
     }
 }
-
-
-//end leave review
-
-
-//end member

@@ -26,6 +26,17 @@ std::vector<std::string> Skill::getSkillList() const{
     return skillList;
 }
 
+std::string Skill::getListOfSkill() const {
+    std::stringstream ss;
+    for (size_t i = 0; i < skillList.size(); ++i) {
+        ss << skillList[i];
+        if (i != skillList.size() - 1) {
+            ss << ", ";
+        }
+    }
+    return ss.str();
+}
+
 int Skill::getSkillID() const{
     return skillID;
 }

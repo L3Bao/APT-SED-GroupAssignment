@@ -81,7 +81,11 @@ void OutputData::outputSkillListToFile() {
         return;
     }
 
+    bool isFirstMember = true;
     for (auto &skill: outputStorageSkillList) {
+        if (!isFirstMember) {
+            os << "\n";
+        }
         std::string skillListStr;
         // Use the getter method to access skillList
         for (const auto& skillName : skill->getSkillList()) {
@@ -94,7 +98,8 @@ void OutputData::outputSkillListToFile() {
         // Use the getter method to access skillID
         os << skill->getSkillID() << ","
            << skillListStr << ","
-           << skill->getCityID() << "\n";  // Assuming getCityName() method provides city name
+           << skill->getCityID();  // getCityName() method provides city name
+        isFirstMember = false;
     }
 
     os.close();
@@ -113,12 +118,17 @@ void OutputData::outputMemberOwnSkillToFile() {
         return;
     }
 
+    bool isFirstMember = true;
     for (auto &member: outputStorageMemberList) {
+        if (!isFirstMember) {
+            os << "\n";
+        }
         // Check if member owns a skill
         if (member->ownedSkill) {
             os << member->memberID << ","
-               << member->ownedSkill->getSkillID() << "\n";
+               << member->ownedSkill->getSkillID();
         }
+        isFirstMember = false;
     }
 
     os.close();
@@ -127,36 +137,49 @@ void OutputData::outputMemberOwnSkillToFile() {
 
 // Output data to Storage/MemberListSkill.csv
 void OutputData::outputMemberListSkillToFile() {
-    std::ofstream os {MEMBER_LIST_SKILL_PATH};
+    std::ofstream os{MEMBER_LIST_SKILL_PATH};
 
     if (!os) {
         std::cerr << "Cannot open " << MEMBER_LIST_SKILL_PATH << " for output\n";
         return;
     }
 
-    // Loop through the list of members
-    for (auto &member: outputStorageMemberList) {
-        // Check if member owns a skill and if it is listed
-        if (member->ownedSkill && member->ownedSkill->isListed) {
-            Skill* skill = member->ownedSkill;
+    // Track the number of entries written
+    int count = 0;
+    int totalEntries = 0;
 
-            // Convert availableFrom and availableTo dates to string
+    // Count the total number of entries to write
+    for (auto &member : outputStorageMemberList) {
+        if (member->ownedSkill && member->ownedSkill->isListed) {
+            totalEntries++;
+        }
+    }
+
+    // Loop through the list of members
+    for (auto &member : outputStorageMemberList) {
+        if (member->ownedSkill && member->ownedSkill->isListed) {
+            count++;
+            Skill *skill = member->ownedSkill;
+
             std::string availableFromStr = skill->getAvailableFrom() ? skill->getAvailableFrom()->toString() : "";
             std::string availableToStr = skill->getAvailableTo() ? skill->getAvailableTo()->toString() : "";
 
-            // Output the info for listing skill
             os << availableFromStr << ","
                << availableToStr << ","
                << skill->getCreditCostPerHour() << ","
                << (skill->getMinHostRating().has_value() ? std::to_string(skill->getMinHostRating().value()) : "N/A") << ","
                << member->memberID << ","
-               << skill->getSkillID() << "\n";
+               << skill->getSkillID();
+
+            // Add a newline if it's not the last entry
+            if (count < totalEntries) {
+                os << "\n";
+            }
         }
     }
 
     os.close();
 }
-
 
 // Output member's skill request information to Storage/MemberRequestSkill.csv
 void OutputData::outputMemberRequestSkillToFile() {
@@ -169,7 +192,7 @@ void OutputData::outputMemberRequestSkillToFile() {
 
     // Loop through each member's skill request list
     for (auto &member: outputStorageMemberList) {
-        for (auto &skillRequest: member->memberRequestList) {  // Assuming memberRequestList contains Request objects
+        for (auto &skillRequest: member->memberRequestList) {  // memberRequestList contains Request objects
             if (skillRequest->requestFrom && skillRequest->requestTo) {
                 os << skillRequest->requestFrom->toString() << ","
                    << skillRequest->requestTo->toString() << ","
@@ -189,19 +212,35 @@ void OutputData::outputMemberRentSkillToFile() {
         return;
     }
 
-    for (auto &member: outputStorageMemberList) {
-        for (auto &memberRent: member->memberRentList) {
+    // Count the total number of entries
+    int totalEntries = 0;
+    for (auto &member : outputStorageMemberList) {
+        totalEntries += member->memberRentList.size();
+    }
+
+    // Keep track of the number of entries written
+    int count = 0;
+
+    for (auto &member : outputStorageMemberList) {
+        for (auto &memberRent : member->memberRentList) {
             if (memberRent->rentFrom && memberRent->rentTo && memberRent->rentSkill) {
+                count++;
                 os << memberRent->rentFrom->toString() << ","
                    << memberRent->rentTo->toString() << ","
                    << member->memberID << ","
-                   << memberRent->rentSkill->getSkillID() << "\n";  // Assuming Skill class has a getSkillID method
+                   << memberRent->rentSkill->getSkillID();
+
+                // Add newline if not the last entry
+                if (count < totalEntries) {
+                    os << "\n";
+                }
             }
         }
     }
 
     os.close();
 }
+
 
 
 // Output member skill ratings to Storage/MemberRatingSkill.csv
@@ -213,14 +252,26 @@ void OutputData::outputMemberRatingSkillAndSupporterToFile() {
         return;
     }
 
+    // Count the total number of entries
+    int totalEntries = 0;
+    for (auto &member : outputStorageMemberList) {
+        totalEntries += member->memberRatingSupporterAndSkillList.size();
+    }
+
+    // Keep track of the number of entries written
+    int count = 0;
+
     for (auto &member: outputStorageMemberList) {
         for (auto &rating: member->memberRatingSupporterAndSkillList) {
-            // Assuming that getSkillRating() returns the skill rating and reviewedByMember points to the member who made the rating
+            //  that getSkillRating() returns the skill rating and reviewedByMember points to the member who made the rating
             os << rating->scores.getSkillRating() << ","
                << rating->scores.getSupporterRating() << ","
                << rating->comment << ","
                << rating->reviewedByMember->memberID << ","  // ID of the member who wrote the review
-               << member->memberID << "\n";  // ID of the member whose skill was rated
+               << member->memberID;  // ID of the member whose skill was rated
+            if (count < totalEntries) {
+                os << "\n";
+            }
         }
     }
 
@@ -228,30 +279,43 @@ void OutputData::outputMemberRatingSkillAndSupporterToFile() {
 }
 
 
-//Output skillOwner review Renter to data file /Storage/MemberRatingHost.csv
+//Output Supporter review Host to data file /Storage/MemberRatingHost.csv
 void OutputData::outputMemberRatingHostToFile()
 {
-    std::ofstream os {MEMBER_RATING_RENTER_PATH};
+    std::ofstream os {MEMBER_RATING_HOST_PATH};
 
     if (!os.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_RATING_RENTER_PATH << " for output\n";
+        std::cerr << "Cannot open " << MEMBER_RATING_HOST_PATH << " for output\n";
         return;
     }
 
+    // Count the total number of entries
+    int totalEntries = 0;
+    for (auto &member : outputStorageMemberList) {
+        totalEntries += member->memberRatingHostList.size();
+    }
+
+    // Keep track of the number of entries written
+    int count = 0;
+
     for (auto &member: outputStorageMemberList) {
         for (auto &memberReview: member->memberRatingHostList) {
-            std::stringstream ss;
-            ss << memberReview->scores.getHostRating() << "," // Host rating score
+            count++;
+            os << memberReview->scores.getHostRating() << "," // Host rating score
                << memberReview->comment << ","                // Comment
                << memberReview->reviewedByMember->memberID << "," // Member ID (the one who gave the rating)
-               << member->memberID << "\n";                     // Host ID (the one who received the rating)
-            std::string line = ss.str();
-            os << line;
+               << member->memberID;                             // Host ID (the one who received the rating)
+
+            // Add newline if not the last entry
+            if (count < totalEntries) {
+                os << "\n";
+            }
         }
     }
 
     os.close();
 }
+
 
 
 //Output renter id and skill info that unrated the skill after rent. /Storage/CompletedSessionList.csv
@@ -259,13 +323,33 @@ void OutputData::outputCompletedSessionListToFile()
 {
     std::ofstream os {COMPLETED_SESSION_LIST_PATH};
 
+    if (!os) {
+        std::cerr << "Cannot open " << COMPLETED_SESSION_LIST_PATH << " for output\n";
+        return;
+    }
+
+    // Count the total number of entries
+    int totalEntries = 0;
+    for (auto &skill : outputStorageSkillList) {
+        totalEntries += skill->completedSkillList.size();
+    }
+
+    // Keep track of the number of entries written
+    int count = 0;
+
     for (auto &skill: outputStorageSkillList) {
         for (auto &completedSession: skill->completedSkillList) {
-            os << completedSession->rentFrom->toString() << "," //scorerating
-            << completedSession->rentTo->toString() << ","     //comment
-            << skill->skillID << ","           //skillID
-            << completedSession->rentedByMember->memberID <<"\n"; //renterID
+            count++;
+            os << completedSession->rentFrom->toString() << "," // Rent from
+            << completedSession->rentTo->toString() << ","     // Rent to
+            << completedSession->rentedByMember->memberID << ","  // hostID
+            << skill->skillOwner->memberID; // supporterID
+            // Add newline if not the last entry
+            if (count < totalEntries) {
+                os << "\n";
+            }
         }
+        
     }
 
     os.close();
@@ -298,32 +382,35 @@ void OutputData::updateMemInfotoFile(std::vector<Member*> memberList) {
     os.close();
 }
 
-void OutputData::outputBlockedMemberToFile() {  
-    std::ofstream os(MEMBER_BLOCK_LIST_PATH, std::ios::app);
+void OutputData::outputBlockedMemberToFile() {
+    std::ofstream os(MEMBER_BLOCK_LIST_PATH, std::ios::trunc); // Use trunc mode to overwrite the file
 
     if (!os) {
         std::cerr << "Cannot open " << MEMBER_BLOCK_LIST_PATH << " for output\n";
         return;
     }
 
-    // Check if the file is empty
-    os.seekp(0, std::ios::end); // Move to the end of the file
-    bool isEmpty = os.tellp() == 0; // Check if the file position is at the start
+    // Count the total number of entries
+    int totalEntries = 0;
+    totalEntries += outputStorageBlockedMemberList.size();
 
-    // If the file is not empty and there are blocked members to write, add a newline first
-    if (!isEmpty && !outputStorageBlockedMemberList.empty()) {
-        os << "\n";
-    }
+    // Keep track of the number of entries written
+    int count = 0;
 
     for (auto &blockedMember : outputStorageBlockedMemberList) {
+        count++;
         os << blockedMember->getBlockerID() << ","
            << blockedMember->getBlockedID() << ","
            << blockedMember->isBlockView() << ","
            << blockedMember->isBlockRequestSupport();
+        if (count < totalEntries) {
+            os << "\n";
+        }
     }
 
     os.close();
 }
+
 
 void OutputData::outputStorageLoadDataFromSystem(System *system) {
     outputStorageLoadMemberListFromSystem(system);

@@ -431,27 +431,25 @@ void InputData::inputMemberRatingSkillAndSupporterFromFile() {
         int skillRating = convertStringToInt(wordList[0]);
         int supporterRating = convertStringToInt(wordList[1]);
         std::string comment = wordList[2];
-        int memberID = convertStringToInt(wordList[3]);
-        int skillID = convertStringToInt(wordList[4]);
+        int reviewerID = convertStringToInt(wordList[3]); // ID of the member who is giving the review
+        int supporterID = convertStringToInt(wordList[4]); // ID of the supporter being reviewed
 
-        // Retrieve the member and skill objects
-        auto memberIt = inputStorageMemberList.find(memberID);
-        auto skillIt = inputStorageSkillList.find(skillID);
+        // Retrieve the reviewer and supporter objects
+        auto reviewerIt = inputStorageMemberList.find(reviewerID);
+        auto supporterIt = inputStorageMemberList.find(supporterID);
 
-        if (memberIt != inputStorageMemberList.end() && skillIt != inputStorageSkillList.end()) {
-            Member* member = memberIt->second;
-            Skill* skill = skillIt->second;
+        if (reviewerIt != inputStorageMemberList.end() && supporterIt != inputStorageMemberList.end()) {
+            Member* reviewer = reviewerIt->second;
+            Member* supporter = supporterIt->second;
 
             // Create and store the rating
-            RatingScores scores(skillRating, supporterRating, 0); //
-            auto *rating = new Rating(scores, comment, member);
+            RatingScores scores(skillRating, supporterRating, 0);
+            auto *rating = new Rating(scores, comment, reviewer);
 
-            // Add rating to both Member and Skill if needed
-            member->addToRateSupporterAndSkillList(rating);
-            // If Skill class also needs to store ratings, add a method in Skill class and call it here
-            // skill->addRating(rating);
+            // Add the rating to the supporter's rating list
+            supporter->addToRateSupporterAndSkillList(rating);
         } else {
-            std::cerr << "Invalid member ID or skill ID in data file: " << line << "\n";
+            std::cerr << "Invalid reviewer ID or supporter ID in data file: " << line << "\n";
         }
     }
 }
@@ -459,10 +457,10 @@ void InputData::inputMemberRatingSkillAndSupporterFromFile() {
 
 
 void InputData::inputMemberRatingHostFromFile() {
-    std::ifstream is{MEMBER_RATING_RENTER_PATH};
+    std::ifstream is{MEMBER_RATING_HOST_PATH};
 
     if (!is.is_open()) {
-        std::cerr << "Cannot open " << MEMBER_RATING_RENTER_PATH << " for input\n";
+        std::cerr << "Cannot open " << MEMBER_RATING_HOST_PATH << " for input\n";
         return;
     }
 
