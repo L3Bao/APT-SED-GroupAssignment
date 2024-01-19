@@ -12,9 +12,11 @@ public:
     // Operator to compare time range
     bool operator<(DateTime &other);
 
-    bool operator==(DateTime &other);
+    bool operator>(DateTime &other);
 
     bool operator<=(DateTime &other);
+
+    bool operator>=(DateTime &other);
 
     // Operator to find the difference between two time range
     int operator-(DateTime &other);

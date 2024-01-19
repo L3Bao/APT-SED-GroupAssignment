@@ -18,12 +18,30 @@ bool DateTime::operator<(DateTime &other) {
     }
 }
 
-bool DateTime::operator==(DateTime &other) {
-    return this->hour == other.hour && this->minute == other.minute;
+bool DateTime::operator>(DateTime &other) {
+    // Compare the hours
+    if (this -> hour > other.hour) {
+        return true;
+    } else if (this -> hour < other.hour) {
+        return false;
+    } else {
+        return this -> minute > other.minute;
+    }
 }
 
-bool DateTime::operator<=(DateTime &other) {
-    return *this < other || *this == other;
+bool DateTime::operator<=(DateTime &other)  {
+    if (hour < other.hour || (hour == other.hour && minute <= other.minute)) {
+        return true;
+    }
+    return false;
+}
+
+
+bool DateTime::operator>=(DateTime &other)  {
+    if (hour > other.hour || (hour == other.hour && minute >= other.minute)) {
+        return true;
+    }
+    return false;
 }
  
 int DateTime::operator-(DateTime &other) {

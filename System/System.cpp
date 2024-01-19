@@ -124,10 +124,6 @@ bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID,
 
     auto [avgSkillRating, avgSupporterRating, avgHostRating] = skill->skillOwner->getRatingScore();
 
-    if (!skill->isListed) {
-        std::cout << "Skill is not listed.\n";
-        return false;
-    }
 
     if (skill == currentMember->ownedSkill) {
         std::cout << "Skill is owned by the current member. Skipping.\n";
@@ -139,11 +135,12 @@ bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID,
         return false;
     }
 
-    if (!((*skill->availableFrom <= *startTime || *skill->availableFrom == *startTime) && 
-          (*endTime <= *skill->availableTo || *endTime == *skill->availableTo))) {
+    // Check if the supporter is available in the requested time slot
+    if (*startTime < *skill->availableFrom || *endTime > *skill->availableTo) {
         std::cout << "Supporter is not available in the requested time slot.\n";
         return false;
     }
+
 
     // Calculate the time difference in hours (converting minutes to hours)
     double timeDifferenceInHours = static_cast<double>(*endTime - *startTime) / 60.0;
@@ -160,7 +157,7 @@ bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID,
     }
 
     for (auto &rent : skill->skillRentList) {
-        if (!(endTime <= rent->rentFrom || startTime >= rent->rentTo)) {
+        if (!(*endTime <= *rent->rentFrom || *startTime >= *rent->rentTo)) {
             std::cout << "Requested time slot overlaps with a rented time slot.\n";
             return false;
         }
