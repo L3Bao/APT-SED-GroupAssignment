@@ -377,14 +377,20 @@ bool System::blockMemberInteraction(Member* requestingMember) {
     }
 
     if (existingBlock) {
-        // Update existing block settings
+        // Update existing block
         existingBlock->updateBlockSettings(blockView, blockRequestSupport);
         std::cout << "Block settings updated successfully.\n";
     } else {
-        // Create a new block entry
-        auto *newBlock = new BlockedMember(requestingMember->memberID, targetMember->memberID, blockView, blockRequestSupport);
-        addBlockedMember(newBlock);
-        std::cout << "New block settings added successfully.\n";
+        // Attempt to create a new block
+        bool success = requestingMember->blockMember(targetMember, blockView, blockRequestSupport);
+        if (success) {
+            auto *newBlock = new BlockedMember(requestingMember->memberID, targetMember->memberID, blockView, blockRequestSupport);
+            addBlockedMember(newBlock);
+            std::cout << "New block settings added successfully.\n";
+        } else {
+            std::cerr << "Failed to update block settings.\n";
+            return false;
+        }
     }
 
     std::cout << "\n1. Return to member Menu\n2. Block another member\n";
