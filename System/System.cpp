@@ -727,7 +727,7 @@ void System::memberMenu(){
               << "--> 3.\tSkill supporting menu\n"
               << "--> 4.\tSearch for available supporters\n"
               << "--> 5.\tView skill request list\n"
-              << "--> 6.\tView currently supported skill\n"
+              << "--> 6.\tView currently supported skill (supporter only)\n"
               << "--> 7.\tView completed session list\n"
               << "--> 8.\tBlock member\n"
               << "--> 9.\tTop up credit points\n"
@@ -1247,44 +1247,84 @@ void System::memberViewRentedSkill() {
 }    //end view currently rented skill
 
 void System::completedSessionListMenu() {
-
-    // Search through all skills for completed sessions where the current member is the host
-    for (auto &skill : systemSkillList) {
-        for (auto &session : skill->completedSkillList) {
-            // Check if the current member is the host in the session
-            if (session->rentedByMember->memberID == currentMember->memberID) {
-                completedSessionList.push_back(session);
+    std::cout << "Choose 1 for supporter, choose 2 for host\n";
+    std::cout << "1. Supporter\n";
+    std::cout << "2. Host\n";
+    std::cout << "3. Back to member menu\n";
+    int ch = choiceFunc(1,3);
+    if (ch == 1) {
+        for (auto &skill : systemSkillList) {
+            for (auto &session : skill-> completedSkillList) {
+                // Check if the current member is the supporter in the session
+                if (session->supportedByMember->memberID == currentMember->memberID) {
+                    completedSessionList.push_back(session);
+                }
             }
         }
-    }
 
-    // Check if there are relevant sessions
-    if (completedSessionList.empty()) {
-        std::cout << "\nYou have no completed sessions.\n\n";
+        if (completedSessionList.empty()) {
+        std::cout << "\nYou have no completed sessions as supporter.\n\n";
         std::cout << "1. Back to member menu\n";
         choiceFunc(1, 1);
         memberMenu();
         return;
-    }
+        }
 
-    // Display the relevant completed sessions
-    std::cout << "\nCompleted Session List: \n\n";
-    for (size_t i = 0; i < completedSessionList.size(); i++) {
-        auto session = completedSessionList[i];
-        std::cout << "--> " << i + 1 << ". " 
-                  << "From: " << session->rentFrom->toString() 
-                  << ", To: " << session->rentTo->toString()
-                  << ", Supported By: " << session->supportedByMember->get_name()
-                  << ", Hosted By: " << session->rentedByMember->get_name() << "\n";
-    }
-    std::cout << completedSessionList.size() + 1 << ". Back to member menu\n";
-
-    // Choose a session for further action
-    int choice = choiceFunc(1, completedSessionList.size() + 1);
-    if (choice == completedSessionList.size() + 1) {
+        // Display the relevant completed sessions
+        std::cout << "\nCompleted Session List: \n\n";
+        for (size_t i = 0; i < completedSessionList.size(); i++) {
+            auto session = completedSessionList[i];
+            std::cout << "--> " << i + 1 << ". " 
+                    << "From: " << session->rentFrom->toString() 
+                    << ", To: " << session->rentTo->toString()
+                    << ", Supported By: " << session->supportedByMember->get_name()
+                    << ", Hosted By: " << session->rentedByMember->get_name() << "\n";
+        }
+        std::cout << completedSessionList.size() + 1 << ". Back to member menu (You can only choose this one!!!)\n";
+        choiceFunc(completedSessionList.size() + 1, completedSessionList.size() + 1);
         memberMenu();
+        return;
+    } else if (ch == 2) {
+        // Search through all skills for completed sessions where the current member is the host
+        for (auto &skill : systemSkillList) {
+            for (auto &session : skill->completedSkillList) {
+                // Check if the current member is the host in the session
+                if (session->rentedByMember->memberID == currentMember->memberID) {
+                    completedSessionList.push_back(session);
+                }
+            }
+        }
+
+        // Check if there are relevant sessions
+        if (completedSessionList.empty()) {
+            std::cout << "\nYou have no completed sessions as host.\n\n";
+            std::cout << "1. Back to member menu\n";
+            choiceFunc(1, 1);
+            memberMenu();
+            return;
+        }
+
+        // Display the relevant completed sessions
+        std::cout << "\nCompleted Session List: \n\n";
+        for (size_t i = 0; i < completedSessionList.size(); i++) {
+            auto session = completedSessionList[i];
+            std::cout << "--> " << i + 1 << ". " 
+                    << "From: " << session->rentFrom->toString() 
+                    << ", To: " << session->rentTo->toString()
+                    << ", Supported By: " << session->supportedByMember->get_name()
+                    << ", Hosted By: " << session->rentedByMember->get_name() << "\n";
+        }
+        std::cout << completedSessionList.size() + 1 << ". Back to member menu\n";
+
+        // Choose a session for further action
+        int choice = choiceFunc(1, completedSessionList.size() + 1);
+        if (choice == completedSessionList.size() + 1) {
+            memberMenu();
+        } else {
+            hostRateSupporterMenu(choice - 1);
+        }
     } else {
-        hostRateSupporterMenu(choice - 1);
+        memberMenu();
     }
 }
 
