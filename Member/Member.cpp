@@ -145,7 +145,7 @@ bool Member::showListOfRequest() {
         // Extract the Host Rating Score using std::get
         double hostRatingScore = std::get<2>(ratingScores);
 
-        std::cout << "+ " << i+1 << ". " << request->requestFrom->toString() << " - " << request->requestFrom->toString() << ", " << "Member: " << request->requestedByMember->get_name() << ", Host Rating: " << hostRatingScore << '\n';
+        std::cout << i+1 << ". " << request->requestFrom->toString() << " - " << request->requestFrom->toString() << ", " << "Member: " << request->requestedByMember->get_name() << ", Host Rating: " << hostRatingScore << '\n';
     }
     return true;
 }
@@ -333,7 +333,7 @@ bool Member::showCurrentSkillRent() {
     std::cout << "Your current supported skills list:\n\n";
     for (int i = 0; i < memberRentList.size(); i++) {
         auto rent = memberRentList[i];
-        std::cout << "+ " << i+1 << ". " << rent->rentSkill->getSkillInfo() << ", " << rent->rentFrom->toString() << " - " << rent->rentTo->toString() << '\n';
+        std::cout << i+1 << ". " << rent->rentSkill->getSkillInfo() << ", " << rent->rentFrom->toString() << " - " << rent->rentTo->toString() << '\n';
     }
 
     return true;
@@ -381,7 +381,7 @@ std::string Member::viewSupporterRateHost() {
         auto comment = rating->comment;
         auto hostScore = rating->scores.getHostRating();
         auto reviewedByMember = rating->reviewedByMember;
-        ss << "+ " << i+1 << ". " << reviewedByMember->get_name() << " - " << comment << ", " << "Host Rating: " << hostScore << '\n';
+        ss << i+1 << ". " << reviewedByMember->get_name() << " - " << comment << ", " << "Host Rating: " << hostScore << '\n';
     }
     return ss.str();
 }
@@ -399,7 +399,7 @@ std::string Member::viewHostRateSupporter() {
         auto skillScore = rating->scores.getSkillRating();
         auto supporterScore = rating->scores.getSupporterRating();
         auto reviewedByMember = rating->reviewedByMember;
-        ss << "+ " << i+1 << ". " << reviewedByMember-> get_name() << " - " << comment << ", " << "Skill Rating: " << skillScore << ", Supporter Rating: " << supporterScore << '\n';
+        ss << i+1 << ". " << reviewedByMember-> get_name() << " - " << comment << ", " << "Skill Rating: " << skillScore << ", Supporter Rating: " << supporterScore << '\n';
     }
     return ss.str();
 }

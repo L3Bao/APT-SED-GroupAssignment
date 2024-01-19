@@ -562,9 +562,9 @@ void System::displayMemberList() {
 
 Member* System::chooseMember() {
     displayMemberList();
-    int choice = choiceFunc(1, systemMemberList.size()); // Adjusted the size
+    int choice = choiceFunc(1, systemMemberList.size()+1); // Adjusted the size
 
-    if (choice == systemMemberList.size()) {
+    if (choice == systemMemberList.size()+1) {
         return nullptr; // Indicates the user chose to go back
     }
 

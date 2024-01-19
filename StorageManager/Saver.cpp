@@ -111,28 +111,42 @@ void OutputData::outputSkillListToFile() {
 
 // Output member own skill to Storage/MemberOwnSkill.csv
 void OutputData::outputMemberOwnSkillToFile() {
-    std::ofstream os {MEMBER_OWN_SKILL_PATH};
+    std::ofstream os{MEMBER_OWN_SKILL_PATH};
 
     if (!os) {
         std::cerr << "Cannot open " << MEMBER_OWN_SKILL_PATH << " for output\n";
         return;
     }
 
-    bool isFirstMember = true;
-    for (auto &member: outputStorageMemberList) {
-        if (!isFirstMember) {
-            os << "\n";
+    // Count the total number of entries to write
+    int totalEntries = 0;
+    for (auto &member : outputStorageMemberList) {
+        if (member->ownedSkill) {
+            totalEntries++;
         }
+    }
+
+    // Track the number of entries written
+    int count = 0;
+
+    // Loop through the list of members
+    for (auto &member : outputStorageMemberList) {
         // Check if member owns a skill
         if (member->ownedSkill) {
+            count++;
             os << member->memberID << ","
                << member->ownedSkill->getSkillID();
+
+            // Add a newline if it's not the last entry
+            if (count < totalEntries) {
+                os << "\n";
+            }
         }
-        isFirstMember = false;
     }
 
     os.close();
 }
+
 
 
 // Output data to Storage/MemberListSkill.csv
