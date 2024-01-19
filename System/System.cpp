@@ -1116,7 +1116,6 @@ void System::suitableSkillMenu(int choice, DateTime *sD, DateTime *eD, int cityI
             } else {
                 std::cout << "Failed to send request\n";
             }
-//            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             memberMenu();
             break;
         case 3:
@@ -1143,7 +1142,7 @@ void System::memberViewSkillRequestListMenu() {
         memberMenu();
     }
 
-    std::cout << "\nChoose a request for view more detail: \n\n";
+    std::cout << "\nChoose a request to view in detail: \n\n";
 
     //View skill request list
     if (currentMember->showListOfRequest()) {
