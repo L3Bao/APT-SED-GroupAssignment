@@ -726,7 +726,7 @@ void System::memberMenu(){
               << "--> 2.\tView other members' information\n"
               << "--> 3.\tSkill supporting menu\n"
               << "--> 4.\tSearch for available supporters\n"
-              << "--> 5.\tView skill request list\n"
+              << "--> 5.\tView skill request list (supporter only)\n"
               << "--> 6.\tView currently supported skill (supporter only)\n"
               << "--> 7.\tView completed session list\n"
               << "--> 8.\tBlock member\n"
