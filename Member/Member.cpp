@@ -145,7 +145,7 @@ bool Member::showListOfRequest() {
         // Extract the Host Rating Score using std::get
         double hostRatingScore = std::get<2>(ratingScores);
 
-        std::cout << i+1 << ". " << request->requestFrom->toString() << " - " << request->requestFrom->toString() << ", " << "Member: " << request->requestedByMember->get_name() << ", Host Rating: " << hostRatingScore << '\n';
+        std::cout << i+1 << ". " << request->requestFrom->toString() << " - " << request->requestTo->toString() << ", " << "Member: " << request->requestedByMember->get_name() << ", Host Rating: " << hostRatingScore << '\n';
     }
     return true;
 }
