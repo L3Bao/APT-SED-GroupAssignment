@@ -894,8 +894,10 @@ bool System::memberEnterSkillInfo() {
     int cityID;
     
     std::cout << "Enter the skill information: \n";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     while (true) {
         std::cout << " - Enter a skill (type 'done' to finish): ";
+
         std::getline(std::cin, skillName);
 
         if (skillName.empty()) {
@@ -957,6 +959,7 @@ bool System::memberListSkill() {
     conPointsNum = convertStringToInt(conPoints);
 
     // Ask if the member wants to set a minimum host rating
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cout << "Do you want to set a minimum required host-rating score? (yes/no): ";
     if (getUserYesNoResponse()) {
         std::string minHostRating;
