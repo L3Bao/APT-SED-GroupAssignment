@@ -96,17 +96,19 @@ bool Member::showMemInfo(Member* memberToShow) {
 // List the skill
 bool Member::listSkill(DateTime *startTime, DateTime *endTime, int creditPointsPerHour, std::optional<double> minimumHostRating) {
     if (ownedSkill->isListed) {
-        return false;
+        return false; // Skill already listed
     }
 
     ownedSkill->isListed = true;
-    ownedSkill->availableFrom = startTime;
-    ownedSkill->availableTo = endTime;
+    // Create new DateTime instances for the skill's availability times
+    ownedSkill->availableFrom = new DateTime(*startTime);
+    ownedSkill->availableTo = new DateTime(*endTime);
     ownedSkill->creditCostPerHour = creditPointsPerHour;
     ownedSkill->minHostRating = minimumHostRating;
-
+  
     return true;
 }
+
 
 // Unlist the skill
 bool Member::unlistSkill() {
