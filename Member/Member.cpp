@@ -217,7 +217,7 @@ bool Member::acceptRequest(int acceptedRequestID) {
         rentMember->RemoveFromRequestList(acceptedRequest);
 
         // Remove the accepted request from the skill's request list
-        ownedSkill->skillRequestList.erase(std::remove(ownedSkill->skillRequestList.begin(), ownedSkill->skillRequestList.end(), acceptedRequest), ownedSkill->skillRequestList.end());
+        ownedSkill->removeRequestFromSkillRequestList(acceptedRequest);
 
         return false;
     }
@@ -239,7 +239,7 @@ bool Member::acceptRequest(int acceptedRequestID) {
     rentMember->RemoveFromRequestList(acceptedRequest);
 
     // Remove the accepted request from the skill's request list
-    ownedSkill->skillRequestList.erase(std::remove(ownedSkill->skillRequestList.begin(), ownedSkill->skillRequestList.end(), acceptedRequest), ownedSkill->skillRequestList.end());
+    ownedSkill->removeRequestFromSkillRequestList(acceptedRequest);
 
     // Deduct the host's credit points and add to the supporter's credit points
     rentMember->minusCreditPoints(requiredCreditPoints);

@@ -204,13 +204,27 @@ void OutputData::outputMemberRequestSkillToFile() {
         return;
     }
 
+    // Count the total number of entries
+    int totalEntries = 0;
+    for (auto &skill : outputStorageSkillList) {
+        totalEntries += skill->skillRequestList.size();
+    }
+
+    // Keep track of the number of entries written
+    int count = 0;
+
     // Loop through each member's skill request list
-    for (auto &member: outputStorageMemberList) {
-        for (auto &skillRequest: member->memberRequestList) {  // memberRequestList contains Request objects
+    for (auto &skill: outputStorageSkillList) {
+        for (auto &skillRequest: skill->skillRequestList) {  // memberRequestList contains Request objects
             if (skillRequest->requestFrom && skillRequest->requestTo) {
+                count++;
                 os << skillRequest->requestFrom->toString() << ","
                    << skillRequest->requestTo->toString() << ","
-                   << member->memberID << "\n";  // Member ID who made the request
+                   << skillRequest->requestedByMember->memberID << ","  // Member ID who made the request
+                   << skill->skillID;
+                if (count < totalEntries) {
+                    os << "\n";
+                }
             }
         }
     }
