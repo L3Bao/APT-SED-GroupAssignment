@@ -814,6 +814,7 @@ void System::viewMemberInformation() {
 
         if (selectedMember == nullptr) {
             std::cout << "Returning to the previous menu...\n";
+            memberMenu();
             return;
         }
 
