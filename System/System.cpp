@@ -69,103 +69,79 @@ bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTim
     memberSuitableSkillList.clear();
     suitableSkillsList.clear();
 
-
-    // Check for overlapping requests
     for (auto &request : currentMember->memberRequestList) {
-
         if (*request->requestTo < *startTime || *endTime < *request->requestFrom) {
             continue; // No overlap
         }
-
-        std::cout << "\nYour request is overlapped!!!\n\n";
         return false; // Overlap detected
     }
 
-    // Iterate over all skills in the system
     for (auto &skill : systemSkillList) {
-
         if (skill->skillOwner == currentMember) {
-            std::cout << "Skipping current member's skill\n";
             continue; // Skip current member's skills
         }
 
-        // Check if skill is suitable
         if (isSuitableSkill(startTime, endTime, cityID - 1, skill)) {
             suitableSkillsList.push_back(skill); // Add skill
             memberSuitableSkillList.push_back(skill->skillOwner); // Add owner
-        } else {
         }
     }
 
-    if (memberSuitableSkillList.empty()) {
-        std::cout << "\nNo supporter is suitable for you!\n";
-        return false; // No suitable supporters
+    if (suitableSkillsList.empty()) {
+        std::cout << "\nNo suitable supporters found.\n";
+        return false;
     }
 
-    // Print suitable supporters
-    std::cout << "\nThe list of suitable supporters for you:\n\n";
+    std::cout << "\nThe list of suitable supporters:\n";
     for (size_t i = 0; i < suitableSkillsList.size(); ++i) {
         Skill* skill = suitableSkillsList[i];
         Member* supporter = memberSuitableSkillList[i];
 
-        // Log supporter details
-        std::cout << "--> " << i + 1 << ". ";
-        std::cout << "Supporter's Name: " << supporter->get_name() << ", Skill(s): " << skill->getListOfSkill() << "\n";
+        std::cout << i + 1 << ". Supporter's Name: " << supporter->get_name() 
+                  << ", Skill(s): " << skill->getListOfSkill() << "\n";
     }
-    std::cout << "\n\n";
-
-    return true; // Successful completion
+    return true;
 }
+
+
 
 
 
 //Function to check if the supporter is suitable to the member
 bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID, Skill *skill) {
+    if (skill->skillOwner == currentMember) {
+        return false;
+    }
 
     auto [avgSkillRating, avgSupporterRating, avgHostRating] = skill->skillOwner->getRatingScore();
 
-
-    if (skill == currentMember->ownedSkill) {
-        std::cout << "Skill is owned by the current member. Skipping.\n";
+    if (skill->availableFrom == nullptr || skill->availableTo == nullptr) {
         return false;
     }
 
-    if (avgHostRating < skill->minHostRating) {
-        std::cout << "Member does not meet the minimum required host rating.\n";
-        return false;
-    }
-
-    // Check if the supporter is available in the requested time slot
     if (*startTime < *skill->availableFrom || *endTime > *skill->availableTo) {
-        std::cout << "Supporter is not available in the requested time slot.\n";
         return false;
     }
 
-
-    // Calculate the time difference in hours (converting minutes to hours)
     double timeDifferenceInHours = static_cast<double>(*endTime - *startTime) / 60.0;
-
     if (timeDifferenceInHours * skill->creditCostPerHour > currentMember->creditPoints) {
-        std::cout << "User does not have enough credit points.\n";
         return false;
     }
-
 
     if (cityID != skill->cityID) {
-        std::cout << "Supporter is in a different city.\n";
         return false;
     }
 
     for (auto &rent : skill->skillRentList) {
         if (!(*endTime <= *rent->rentFrom || *startTime >= *rent->rentTo)) {
-            std::cout << "Requested time slot overlaps with a rented time slot.\n";
             return false;
         }
     }
 
-    std::cout << "Skill is suitable.\n";
     return true;
 }
+
+
 
 
 bool System::memberViewSkillReviewList(int skillID, DateTime *sD, DateTime *eD) {
@@ -1042,20 +1018,27 @@ void System::memberSearchSuitableSkillMenu(){
 }
 
 void System::memberSuitableSkillMenu(DateTime *sD, DateTime *eD, int cityID) {
-    // Clear the suitable skill vector
     memberSuitableSkillList.clear();
-    // Show suitable skills
-    memberSearchSuitableSkillList(sD, eD, cityID);
+
+    if (!memberSearchSuitableSkillList(sD, eD, cityID)) {
+        std::cout << "No suitable skills found. Please try different criteria.\n";
+        std::cout << "1. Retry with different criteria\n";
+        std::cout << "2. Return to member menu\n";
+        int choice = choiceFunc(1, 2);
+        if (choice == 1) {
+            memberSearchSuitableSkillMenu(); // Retry
+        } else {
+            memberMenu(); // Return to member menu
+        }
+        return;
+    }
+
     std::cout << memberSuitableSkillList.size() + 1 << ". Back to member menu\n";
     int choice = choiceFunc(1, memberSuitableSkillList.size() + 1);
     if (choice == (memberSuitableSkillList.size() + 1)) {
-        // Back to member menu
         memberMenu();
     } else {
-        // Get selected member (potential supporter)
         Member* potentialSupporter = memberSuitableSkillList[choice - 1];
-        
-        // Check if the current member is blocked from requesting support
         if (potentialSupporter->isBlockedForRequesting(currentMember)) {
             std::cout << "\nYou are blocked from requesting support from this member.\n";
             std::cout << "\n--> 1.\tBack to skill list\n";
@@ -1064,42 +1047,37 @@ void System::memberSuitableSkillMenu(DateTime *sD, DateTime *eD, int cityID) {
             return;
         }
 
-        // Options for unblocked members
         std::cout << "\n\n--> 1.\tRequest supporter\n\n"
                   << "--> 2.\tView supporter reviews\n\n"
                   << "--> 3.\tBack to skill list\n";
         switch (choiceFunc(1, 3)) {
             case 1:
-                // Send request to the supporter and go back to member menu
                 memberSendRequest(sD, eD, choice - 1);
                 std::cout << "\n\tRequest sent\n";
                 memberMenu();
                 break;
             case 2:
-                // View supporter reviews
                 memberViewSkillReviewList(choice - 1, sD, eD);
                 std::cout << "\n\n--> 1.\tRequest supporter\n\n"
                           << "--> 2.\tBack to skill list\n";
                 switch (choiceFunc(1, 2)) {
                     case 1:
-                        // Send request to the supporter
                         memberSendRequest(sD, eD, choice - 1);
                         std::cout << "\tRequest sent\n";
                         memberMenu();
                         break;
                     case 2:
-                        // Back to suitable supporter list
                         memberSuitableSkillMenu(sD, eD, cityID);
                         break;
                 }
                 break;
             case 3:
-                // Back to suitable supporter list
                 memberSuitableSkillMenu(sD, eD, cityID);
                 break;
         }
     }
 }
+
 
 
 void System::suitableSkillMenu(int choice, DateTime *sD, DateTime *eD, int cityID) {
