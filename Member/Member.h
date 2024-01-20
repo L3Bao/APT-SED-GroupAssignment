@@ -15,6 +15,7 @@ class Request;
 class MemberRent;
 class DateTime;
 class Member;
+class SkillRent;
 class BlockedMember;
 class Member: public User {
     int memberID;
@@ -35,6 +36,8 @@ class Member: public User {
     std::vector<Request*> memberRequestList;
 
     std::vector<MemberRent*> memberRentList;
+
+    std::vector<SkillRent*> completedSessionList;
 
     std::map<int, BlockedMember*> blockedMembers;
 
@@ -76,6 +79,8 @@ public:
     bool showCurrentSkillRent();
 
     bool showCompletedSession();
+
+    bool addCompletedSession(SkillRent* skillRent);
 
     bool addToRateSupporterAndSkillList(Rating *memberRating);
 

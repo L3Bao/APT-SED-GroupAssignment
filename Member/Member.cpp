@@ -283,7 +283,7 @@ bool Member::completeRequest(int completedSkillID) {
 
     auto *completedSession = new SkillRent(completedSkillFrom, completedSkillTo, renter, this);
 
-    completedRentSkill->addCompletedSession(completedSession);
+    this->addCompletedSession(completedSession);
     removeHost(completedSkill);
 
     return true;
@@ -350,6 +350,15 @@ bool Member::addToRateSupporterAndSkillList(Rating* rating) {
 
 bool Member::addToRateHostList(Rating *memberRating) {
     memberRatingHostList.push_back(memberRating);
+    return true;
+}
+
+bool Member::addCompletedSession(SkillRent* rentSession) {
+    if (rentSession == nullptr) {
+        std::cerr << "Cannot add a null session to completed sessions.\n";
+        return false;
+    }
+    completedSessionList.push_back(rentSession);
     return true;
 }
 
@@ -444,18 +453,18 @@ void Member::setPassword(const std::string& newPassword) {
 
 // View the completed session
 bool Member::showCompletedSession() {
-    if (ownedSkill->completedSkillList.empty()) {
+    if (completedSessionList.empty()) {
         std::cout << "There aren't any completed sessions\n\n";
         return false;
     }
 
     std::cout << "The list of completed sessions:\n\n";
     int i = 1;
-    for (auto &completedSession : ownedSkill->completedSkillList) {
+    for (auto &completedSession : completedSessionList) {
         auto from = completedSession->rentFrom;
         auto to = completedSession->rentTo;
         auto host = completedSession->rentedByMember;
-        auto supporter = ownedSkill->skillOwner;
+        auto supporter = completedSession->supportedByMember;
 
         std::cout << "-->\t" << i << ". " << from->toString() << " - " << to->toString() << ", Rented by: " << host->get_name() << ", Supported by: " << supporter->get_name() << "\n";
         i++;

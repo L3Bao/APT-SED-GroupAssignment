@@ -24,7 +24,6 @@ class Skill {
 
     std::vector<Request*> skillRequestList;
     std::vector<SkillRent*> skillRentList;
-    std::vector<SkillRent*> completedSkillList;
 
 public:
     Skill(int skillID, std::vector<std::string> skillList, int cityID);
@@ -44,7 +43,6 @@ public:
 
     bool addRequestToSkillRequestList(Request* request);
     bool removeRequestFromSkillRequestList(Request *request);
-    bool addCompletedSession(SkillRent *rentSession);
 
     ~Skill();
 

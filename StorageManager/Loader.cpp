@@ -534,20 +534,19 @@ void InputData::inputCompletedSessionFromFile() {
         // Parse data
         DateTime *rentFrom = convertStringToDateTime(wordList[0]);
         DateTime *rentTo = convertStringToDateTime(wordList[1]);
-        int skillID = convertStringToInt(wordList[2]);
-        int hostID = convertStringToInt(wordList[3]);
+        int hostID = convertStringToInt(wordList[2]);  // Corrected: This is now the hostID
+        int supporterID = convertStringToInt(wordList[3]);  // Corrected: This is now the skillID
 
         // Retrieve Member and Skill objects
         auto hostIt = inputStorageMemberList.find(hostID);
-        auto skillIt = inputStorageSkillList.find(skillID);
+        auto supporterIt = inputStorageMemberList.find(supporterID);
 
         // Check if Member and Skill exist
-        if (hostIt != inputStorageMemberList.end() && skillIt != inputStorageSkillList.end()) {
-            Member *supporter = skillIt->second->skillOwner;
-            // Create a new SkillRent object for the unrated session
-            auto *completedSession = new SkillRent(rentFrom, rentTo, hostIt->second, supporter);
-            // Add this unrated session to the Skill object
-            skillIt->second->addCompletedSession(completedSession); 
+        if (hostIt != inputStorageMemberList.end() && supporterIt != inputStorageMemberList.end()) {
+            // Create a new SkillRent object for the completed session
+            auto *completedSession = new SkillRent(rentFrom, rentTo, hostIt->second, supporterIt->second);
+            // Add this completed session to the Skill object
+            supporterIt->second->addCompletedSession(completedSession); 
         } else {
             std::cerr << "Invalid Member ID or Skill ID in data file: " << line << "\n";
         }

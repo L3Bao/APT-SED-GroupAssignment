@@ -277,6 +277,7 @@ void OutputData::outputMemberRatingSkillAndSupporterToFile() {
 
     for (auto &member: outputStorageMemberList) {
         for (auto &rating: member->memberRatingSupporterAndSkillList) {
+            count++;
             //  that getSkillRating() returns the skill rating and reviewedByMember points to the member who made the rating
             os << rating->scores.getSkillRating() << ","
                << rating->scores.getSupporterRating() << ","
@@ -344,20 +345,20 @@ void OutputData::outputCompletedSessionListToFile()
 
     // Count the total number of entries
     int totalEntries = 0;
-    for (auto &skill : outputStorageSkillList) {
-        totalEntries += skill->completedSkillList.size();
+    for (auto &skill : outputStorageMemberList) {
+        totalEntries += skill->completedSessionList.size();
     }
 
     // Keep track of the number of entries written
     int count = 0;
 
-    for (auto &skill: outputStorageSkillList) {
-        for (auto &completedSession: skill->completedSkillList) {
+    for (auto &skill: outputStorageMemberList) {
+        for (auto &completedSession: skill->completedSessionList) {
             count++;
             os << completedSession->rentFrom->toString() << "," // Rent from
             << completedSession->rentTo->toString() << ","     // Rent to
             << completedSession->rentedByMember->memberID << ","  // hostID
-            << skill->skillOwner->memberID; // supporterID
+            << completedSession->supportedByMember->memberID; // supporterID
             // Add newline if not the last entry
             if (count < totalEntries) {
                 os << "\n";

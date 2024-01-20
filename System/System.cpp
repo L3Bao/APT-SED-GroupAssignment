@@ -1253,8 +1253,8 @@ void System::completedSessionListMenu() {
     std::cout << "3. Back to member menu\n";
     int ch = choiceFunc(1,3);
     if (ch == 1) {
-        for (auto &skill : systemSkillList) {
-            for (auto &session : skill-> completedSkillList) {
+        for (auto &skill : systemMemberList) {
+            for (auto &session : skill->completedSessionList) {
                 // Check if the current member is the supporter in the session
                 if (session->supportedByMember->memberID == currentMember->memberID) {
                     completedSessionList.push_back(session);
@@ -1286,8 +1286,8 @@ void System::completedSessionListMenu() {
         return;
     } else if (ch == 2) {
         // Search through all skills for completed sessions where the current member is the host
-        for (auto &skill : systemSkillList) {
-            for (auto &session : skill->completedSkillList) {
+        for (auto &skill : systemMemberList) {
+            for (auto &session : skill->completedSessionList) {
                 // Check if the current member is the host in the session
                 if (session->rentedByMember->memberID == currentMember->memberID) {
                     completedSessionList.push_back(session);
