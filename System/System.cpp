@@ -119,58 +119,49 @@ bool System::memberSearchSuitableSkillList(DateTime *startTime, DateTime *endTim
 }
 
 // Function to check if the supporter is suitable to the member
-bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID, Skill *skill)
-{
-    if (skill->skillOwner == currentMember)
-    {
+bool System::isSuitableSkill(DateTime *startTime, DateTime *endTime, int cityID, Skill *skill) {
+    // Check if the skill belongs to the current member
+    if (skill->skillOwner == currentMember) {
         std::cout << "Cannot request your own skill.\n";
         return false;
     }
 
-    auto [avgSkillRating, avgSupporterRating, avgHostRating] = skill->skillOwner->getRatingScore();
-
-    if (skill->availableFrom == nullptr || skill->availableTo == nullptr)
-    {
-        std::cout << "Skill availability is not defined.\n";
+    // Check if skill availability times are defined
+    if (skill->availableFrom == nullptr || skill->availableTo == nullptr) {
         return false;
     }
 
-    // If the member does not have the minimum required score
-    if (avgHostRating < skill->minHostRating)
-    {
+    // Check for minimum required host rating
+    auto [avgSkillRating, avgSupporterRating, avgHostRating] = skill->skillOwner->getRatingScore();
+    if (avgHostRating < skill->minHostRating) {
         std::cout << "Your host rating is below the minimum required for this skill.\n";
         return false;
     }
 
-    std::cout << "Checking time: Requested - " << startTime->toString() 
-              << " to " << endTime->toString() << ", Available - " 
-              << skill->availableFrom->toString() << " to " 
-              << skill->availableTo->toString() << "\n";
-
-    if (*startTime < *skill->availableFrom || *endTime > *skill->availableTo)
-    {
+    // Check if the requested time is within the skill's available time
+    if (*startTime < *skill->availableFrom || *endTime > *skill->availableTo) {
         std::cout << "Requested time is outside the skill's available time.\n";
         return false;
     }
 
+    // Check for sufficient credit points
     double timeDifferenceInHours = static_cast<double>(*endTime - *startTime) / 60.0;
-    if (timeDifferenceInHours * skill->creditCostPerHour > currentMember->creditPoints)
-    {
+    if (timeDifferenceInHours * skill->creditCostPerHour > currentMember->creditPoints) {
         std::cout << "Insufficient credit points for the requested time period.\n";
         return false;
     }
 
-    if (cityID != skill->cityID)
-    {
+    // Check if the skill is available in the selected city
+    if (cityID != skill->cityID) {
         std::cout << "Skill is not available in the selected city.\n";
         return false;
     }
 
-    for (auto &rent : skill->skillRentList)
-    {
-        if (!(*endTime <= *rent->rentFrom || *startTime >= *rent->rentTo))
-        {
-            std::cout << "Requested time slot overlaps with an existing rent.\n";
+    // Check for overlapping rented time slots
+    for (auto &rent : skill->skillRentList) {
+        if (!(*endTime <= *rent->rentFrom || *startTime >= *rent->rentTo)) {
+            std::cout << "Requested time slot overlaps with an existing rent: "
+                      << rent->rentFrom->toString() << " to " << rent->rentTo->toString() << "\n";
             return false;
         }
     }
