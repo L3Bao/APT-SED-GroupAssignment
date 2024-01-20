@@ -55,6 +55,14 @@ int DateTime::operator-(DateTime &other) {
 
 std::string DateTime::toString() {
     std::stringstream ss;
-    ss << std::setfill('0') << std::setw(2) << hour << ":" << std::setfill('0') << std::setw(2) << minute;
+    
+    // Check if the hour and minute values are within the valid range
+    if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+        ss << std::setfill('0') << std::setw(2) << hour << ":" << std::setfill('0') << std::setw(2) << minute;
+    } else {
+        // Return an error message
+        ss << "Invalid Time";
+    }
+    
     return ss.str();
 }
