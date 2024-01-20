@@ -177,11 +177,18 @@ void OutputData::outputMemberListSkillToFile() {
 
             std::string availableFromStr = skill->getAvailableFrom() ? skill->getAvailableFrom()->toString() : "";
             std::string availableToStr = skill->getAvailableTo() ? skill->getAvailableTo()->toString() : "";
+            std::stringstream minHostRatingStream;
+            if (skill->getMinHostRating().has_value()) {
+                double minHostRating = skill->getMinHostRating().value();
+                minHostRatingStream << std::fixed << std::setprecision(1) << minHostRating;
+            } else {
+                minHostRatingStream << "N/A";
+            }
 
             os << availableFromStr << ","
                << availableToStr << ","
                << skill->getCreditCostPerHour() << ","
-               << (skill->getMinHostRating().has_value() ? std::to_string(skill->getMinHostRating().value()) : "N/A") << ","
+               << minHostRatingStream.str() << ","
                << member->memberID << ","
                << skill->getSkillID();
 
