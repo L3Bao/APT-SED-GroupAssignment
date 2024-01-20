@@ -46,7 +46,7 @@ public:
 
     std::tuple<double, double, double> getRatingScore();
 
-    bool showMemInfo();
+    bool showMemInfo(Member* memberToShow = nullptr);
 
     bool listSkill(DateTime *startTime, DateTime *endTime, int creditPointsPerHour, std::optional<double> minimumHostRating);
 

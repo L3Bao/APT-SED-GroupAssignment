@@ -297,7 +297,7 @@ void OutputData::outputMemberRatingSkillAndSupporterToFile() {
                << rating->scores.getSupporterRating() << ","
                << rating->comment << ","
                << rating->reviewedByMember->memberID << ","  // ID of the member who wrote the review
-               << member->memberID;  // ID of the member whose skill was rated
+               << rating->receivedByMember->memberID;  // ID of the member whose skill was rated
             if (count < totalEntries) {
                 os << "\n";
             }
@@ -333,7 +333,7 @@ void OutputData::outputMemberRatingHostToFile()
             os << memberReview->scores.getHostRating() << "," // Host rating score
                << memberReview->comment << ","                // Comment
                << memberReview->reviewedByMember->memberID << "," // Member ID (the one who gave the rating)
-               << member->memberID;                             // Host ID (the one who received the rating)
+               << memberReview->receivedByMember->memberID;                             // Host ID (the one who received the rating)
 
             // Add newline if not the last entry
             if (count < totalEntries) {

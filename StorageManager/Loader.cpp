@@ -444,7 +444,7 @@ void InputData::inputMemberRatingSkillAndSupporterFromFile() {
 
             // Create and store the rating
             RatingScores scores(skillRating, supporterRating, 0);
-            auto *rating = new Rating(scores, comment, reviewer);
+            auto *rating = new Rating(scores, comment, reviewer, supporter);
 
             // Add the rating to the supporter's rating list
             supporter->addToRateSupporterAndSkillList(rating);
@@ -493,7 +493,7 @@ void InputData::inputMemberRatingHostFromFile() {
 
             // Create and store the rating
             RatingScores scores(0, 0, hostRating);
-            auto *rating = new Rating(scores, comment, reviewer);
+            auto *rating = new Rating(scores, comment, reviewer, host);
 
             // Add rating to the host's rating list
             host->addToRateHostList(rating);

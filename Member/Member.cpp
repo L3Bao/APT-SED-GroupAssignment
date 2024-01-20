@@ -39,8 +39,10 @@ std::tuple<double, double, double> Member::getRatingScore() {
     if (!memberRatingSupporterAndSkillList.empty()) {
         double totalSkillRating = 0.0, totalSupporterRating = 0.0;
         for (auto &review : memberRatingSupporterAndSkillList) {
-            totalSkillRating += review->scores.getSkillRating();
-            totalSupporterRating += review->scores.getSupporterRating();
+            if (review->receivedByMember == this) { // Ensure review is for this member
+                totalSkillRating += review->scores.getSkillRating();
+                totalSupporterRating += review->scores.getSupporterRating();
+            }
         }
         avgSkillRating = totalSkillRating / memberRatingSupporterAndSkillList.size();
         avgSupporterRating = totalSupporterRating / memberRatingSupporterAndSkillList.size();
@@ -49,7 +51,9 @@ std::tuple<double, double, double> Member::getRatingScore() {
     if (!memberRatingHostList.empty()) {
         double totalHostRating = 0.0;
         for (auto &review : memberRatingHostList) {
-            totalHostRating += review->scores.getHostRating();
+            if (review->receivedByMember == this) { // Ensure review is for this member
+                totalHostRating += review->scores.getHostRating();
+            }
         }
         avgHostRating = totalHostRating / memberRatingHostList.size();
     }
@@ -65,7 +69,9 @@ std::tuple<double, double, double> Member::getRatingScore() {
 
 
 //Feature 4: A member can login with the registered username and password, and can view all of his/her information.
-bool Member::showMemInfo() {
+bool Member::showMemInfo(Member* memberToShow) {
+    Member* member = memberToShow ? memberToShow : this;
+
     std::cout << "\n+ Username: " << username << '\n';
     std::cout << "+ Full name: " << get_name() << '\n';
     std::cout << "+ Phone number: " << phoneNumber << '\n';
@@ -308,7 +314,7 @@ bool Member::rateSupporterAndSkill(Member* supporter, int skillRating, int suppo
 
     // Create the rating
     RatingScores scores(skillRating, supporterRating, 0); // Host rating is not applicable here
-    auto newRating = new Rating(scores, comment, this); // 'this' refers to the host member who is giving the rating
+    auto newRating = new Rating(scores, comment, this, supporter); // 'this' refers to the host member who is giving the rating
 
     // Add the rating to the supporter's rating list
     supporter->addToRateSupporterAndSkillList(newRating);
@@ -373,7 +379,7 @@ bool Member::rateHost(Member* host, int hostRating, std::string comment) {
 
     RatingScores scores(0, 0, hostRating);
 
-    auto newRating = new Rating(scores, std::move(comment), this);
+    auto newRating = new Rating(scores, std::move(comment), this, host);
     host->addToRateHostList(newRating);
     return true;
 }

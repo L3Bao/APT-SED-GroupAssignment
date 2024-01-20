@@ -22,8 +22,9 @@ private:
     RatingScores scores;
     std::string comment;
     Member* reviewedByMember;
+    Member* receivedByMember;
 public:
-    Rating (const RatingScores& scores, std::string comment, Member* reviewedByMember);
+    Rating (const RatingScores& scores, std::string comment, Member* reviewedByMember, Member* receivedByMember);
 
     friend class System;
     friend class Member;

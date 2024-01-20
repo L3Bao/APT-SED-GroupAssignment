@@ -807,7 +807,7 @@ void System::viewMemberInformation() {
         if (selectedMember->isBlockedForViewing(currentMember)) {
             std::cout << "You are blocked from viewing this member's information.\n";
         } else {
-            selectedMember->showMemInfo();
+            selectedMember->showMemInfo(selectedMember);
         }
 
         std::cout << "\nChoose an option:\n";
